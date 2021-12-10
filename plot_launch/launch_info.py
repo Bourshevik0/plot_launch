@@ -13,6 +13,7 @@ import os
 
 
 # Any changes to the path and your own modules
+from plot_launch import constants
 
 class PayloadInfoLists:  # pylint: disable=too-few-public-methods
     """
@@ -153,7 +154,8 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship.append(data_dict.get('回收船'))
 
 
-def get_launch_info_from_files(data_dir):
+def get_launch_info_from_files(data_dir,
+                               filter=constants.DEFAULT_DATA_FILTER):
     """
     Defines code to get launchinfo from multiple raw data files.
     :param data_dir: A directory path contains several raw data files to read.
@@ -161,6 +163,8 @@ def get_launch_info_from_files(data_dir):
     """
     dir_data = []
     for filename in os.listdir(data_dir):
+        if filter not in filename:
+            continue
         abs_path = os.path.join(data_dir, filename)
         with open(abs_path, encoding='utf-8') as data_file:
             raw_data = data_file.read()

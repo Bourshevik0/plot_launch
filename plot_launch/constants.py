@@ -8,7 +8,6 @@ Defines constants used by plot_launch.
 import datetime
 import os
 
-
 # Import third-party modules
 
 
@@ -44,6 +43,7 @@ HERE = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 FONT_NAME = 'font/sarasa-gothic-sc-semibold.ttf'
 FONT_PATH = os.path.join(HERE, FONT_NAME)
 DEFAULT_DATA_DIR = 'launchinfo'
+DEFAULT_DATA_FILTER = str(datetime.datetime.utcnow().year)[-2:]
 DATA_PATH = os.path.join(HERE, DEFAULT_DATA_DIR)
 LICENSE_IMG_NAME = 'img/CC BY-NC-SA 4.0.png'
 LICENSE_IMG_PATH = os.path.join(HERE, LICENSE_IMG_NAME)

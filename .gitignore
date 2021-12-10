@@ -151,5 +151,4 @@ dmypy.json
 *.po~
 Pipfile
 *.lock
-/launchinfo
 /font

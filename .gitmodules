@@ -1,0 +1,3 @@
+[submodule "launchinfo"]
+	path = launchinfo
+	url = git@Bourshevik0:Bourshevik0/launchinfo.git
