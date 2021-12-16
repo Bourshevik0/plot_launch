@@ -82,7 +82,9 @@ def plot_launch_statistics(launch_statistics,
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
                  color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
-                 label=launch_statistics.countries[j],
+                 label="{country}({number})".format(
+                     country=launch_statistics.countries[j],
+                     number=str(y_value[-1])),
                  linewidth=3)
     plt.legend(prop=fprop)
     ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
@@ -90,8 +92,8 @@ def plot_launch_statistics(launch_statistics,
 
     text = """截至UTC时间：{cur_time}
 绘制者：@旋火_SwingFire
-绘制脚本参考：https://github.com/Vony7/Astronaut-Mission-Time
-图片授权：CC BY-NC-SA 4.0 
+绘制脚本：https://github.com/Bourshevik0/plot_launch
+本作品采用 CC BY-NC-SA 4.0 进行许可
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 """.format(cur_time=constants.CURRENT_TIME)
 
@@ -111,7 +113,7 @@ def plot_launch_statistics(launch_statistics,
     ax.yaxis.tick_right()
     ax.yaxis.set_label_position('right')
 
-    y_max = ax.get_ylim()[1] - 5
+    y_max = ax.get_ylim()[1] - 3
     i = 5
     while i < y_max:
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
@@ -123,7 +125,11 @@ def plot_launch_statistics(launch_statistics,
     datetime_i = datetime.datetime(year=launch_info_lists.time[0].year,
                                    month=i,
                                    day=d[j])
-    while datetime_i < x_max:
+
+    while datetime_i < x_max and i < 13:
+        datetime_i = datetime.datetime(year=launch_info_lists.time[0].year,
+                                       month=i,
+                                       day=d[j])
         plt.axvline(x=datetime_i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',
@@ -131,9 +137,6 @@ def plot_launch_statistics(launch_statistics,
         i = i + j % 2
         j = j + 1
         j = j % 2
-        datetime_i = datetime.datetime(year=launch_info_lists.time[0].year,
-                                       month=i,
-                                       day=d[j])
 
     cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
     cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
