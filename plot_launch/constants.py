@@ -51,7 +51,19 @@ DEFAULT_FIGURE_FILENAME = \
     str(datetime.datetime.utcnow().year) + '_launch_time_by_countries_step.png'
 FIGURE_PATH = os.path.join(HERE, DEFAULT_FIGURE_FILENAME)
 
+ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '预期轨道')
+
 DEFAULT_DPI = 300
 DEFAULT_FIGSIZE = (16, 9)
 DEFAULT_FONTSIZE = 14
 DEFAULT_AXLINE_COLOR = '#80808080'
+
+GEO_CONSTANT = 3.9860044E14
+# reference https://en.wikipedia.org/wiki/Standard_gravitational_parameter#Geocentric_gravitational_constant
+
+EARTH_SURFACE_POTENTIAL_ENERGY = 0.0 - 6.26E7
+# reference https://en.wikipedia.org/wiki/Specific_orbital_energy#Examples
+
+NOMINAL_EARTH_RADIUS = 6.378145E6
+# reference https://en.wikipedia.org/wiki/Earth_radius#Nominal_radius
+# https://www.zarya.info/Diaries/Launches/Launches.php?year=2021

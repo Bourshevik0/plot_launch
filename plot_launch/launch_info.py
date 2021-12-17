@@ -15,10 +15,12 @@ import os
 # Any changes to the path and your own modules
 from plot_launch import constants
 
+
 class PayloadInfoLists:  # pylint: disable=too-few-public-methods
     """
     Class for the data of orbital payloads of an orbital launch.
     """
+
     def __init__(self):
         self.payload_info = []
         self.payload_man = []
@@ -47,6 +49,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
     """
     Class for the data of orbital launches.
     """
+
     def __init__(self):
         # common data of launches
         self.id = []
@@ -57,8 +60,10 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.flight_num = []
         self.launch_provider = []
         self.payload_info = []
+        self.payload_mass = []
         self.launcher = []
         self.orbit = []
+        self.orbital_energy = []
         self.launch_result = []
         self.remarks = []
 
@@ -74,6 +79,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
     def from_raw_data(cls,
                       raw_data):
         """
+        Initialize a LaunchInfoLists object from raw_data.
         :param raw_data: A raw format of data of launches which separated by '\n\n' which is a
         string.
         :return launch_info_lists: An initialized LaunchInfoLists object.
@@ -110,8 +116,9 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
     def append_dict(self,
                     data_dict):
         """
+        Append a LaunchInfoLists object from a data_dict.
         :param data_dict: A dictionary of raw data from a single launch.
-        :return: None
+        :return None:
         """
         # common statistics of launches
         self.id.append(data_dict.get('编号'))
@@ -135,17 +142,44 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.mission_name.append(data_dict.get('任务名'))
         self.flight_num.append(data_dict.get('飞行编号'))
         self.launch_provider.append(data_dict.get('发射提供方'))
-        self.payload_info.append(data_dict.get('载荷信息'))
+
+        result = data_dict.get('载荷信息')
+        if not result:
+            result = "{part1}；{part2}".format(
+                part1=data_dict.get('主载荷信息'),
+                part2=data_dict.get('搭车载荷信息'))
+        self.payload_info.append(result)
+
+        result = data_dict.get('载荷质量')
+        if not result:
+            result = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', self.payload_info[-1])))
+            if not result:
+                result = '0吨'
+            else:
+                result = '{value}吨'.format(value=result[0])
+        self.payload_mass.append(result)
+
         self.launcher.append(data_dict.get('载具'))
-        self.orbit.append(data_dict.get('轨道'))
+
+        for key in constants.ORBIT_KEY_CANDIDATE:
+            result = data_dict.get(key)
+            if result:
+                break
+        self.orbit.append(result)
 
         result = data_dict.get('结果')
         if not result:
             result = data_dict.get('结果(发射与回收)')
         if result == '成功':
             self.launch_result.append(True)
+            self.orbital_energy.append(get_orbital_energy(self.orbit[-1],
+                                                          self.payload_mass[-1]))
+            # print("发射时间：{time}".format(time=self.time[-1]))
+            # print("载荷信息：{info}".format(info=self.payload_info[-1]))
+            # print("轨道额外能量：{content}\n".format(content=self.orbital_energy[-1]))
         else:
             self.launch_result.append(False)
+            self.orbital_energy.append(0.0)
 
         self.remarks.append(data_dict.get('备注'))
 
@@ -154,16 +188,51 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship.append(data_dict.get('回收船'))
 
 
+def get_orbital_energy(orbit_str,
+                       mass_str):
+    """
+    Get potential extra orbital energy from payload orbit and payload mass of the index number.
+    :param orbit_str: A string contains basic orbit data.
+    :param mass_str: A string contains basic mass data.
+    :return result: The potential extra orbital energy from payload(s).
+    """
+    orbit_str_list = orbit_str.split('；')
+    mass_list = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', mass_str)))
+
+    i = 0
+    result = 0.0
+    for orbit_str in orbit_str_list:
+        if 'C₃' in orbit_str:
+            specific_orbital_energy = \
+                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0]
+        elif '半长轴' in orbit_str:
+            semi_major_axis = \
+                list(map(float, re.findall(r'-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *\+?\ *[0-9]+)?',
+                                           orbit_str)))[0] * 1000.0
+            specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
+        else:
+            orbit_str = orbit_str.replace('km', '')
+            apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit_str)))
+            semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 + constants.NOMINAL_EARTH_RADIUS
+            specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
+        result = (specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY) * \
+            mass_list[i] / 1E4 + result
+        # * 1000 / unit 10MJ
+        i = i + 1
+    return round(result)
+
+
 def get_launch_info_from_files(data_dir,
-                               filter=constants.DEFAULT_DATA_FILTER):
+                               filter_=constants.DEFAULT_DATA_FILTER):
     """
     Defines code to get launchinfo from multiple raw data files.
+    :param filter_: A filter to filter out unwanted data files.
     :param data_dir: A directory path contains several raw data files to read.
     :return LaunchInfoLists: An initialized LaunchInfoLists object.
     """
     dir_data = []
     for filename in os.listdir(data_dir):
-        if filter not in filename:
+        if filter_ not in filename or not filename.endswith('txt'):
             continue
         abs_path = os.path.join(data_dir, filename)
         with open(abs_path, encoding='utf-8') as data_file:
@@ -179,7 +248,6 @@ def get_launch_info_from_files(data_dir,
             dir_data.extend(raw_list[:index])
     raw_data = '\n\n'.join(dir_data)
     return LaunchInfoLists.from_raw_data(raw_data=raw_data)
-
 
 # if __name__ == "__main__":
 #     here = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
