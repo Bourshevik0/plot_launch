@@ -58,8 +58,9 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
 
         self.total_launch_energy_steps = numpy.zeros(
             (self.total_launch_success, countries_length), dtype=int)
-
         self.total_launch_s_energy_steps = numpy.zeros(
+            (self.total_launch_success, countries_length), dtype=int)
+        self.total_launch_mass_steps = numpy.zeros(
             (self.total_launch_success, countries_length), dtype=int)
 
         i = 0
@@ -80,10 +81,28 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                     self.total_launch_s_energy_steps[k][idx] = \
                         self.total_launch_s_energy_steps[k - 1][idx] + \
                         launch_info_lists.s_orbital_energy[i]
+
+                    if len(launch_info_lists.payload_mass[i]) > 1:
+                        self.total_launch_mass_steps[k] = \
+                            self.total_launch_mass_steps[k - 1]
+                        self.total_launch_mass_steps[k][idx] = \
+                            self.total_launch_mass_steps[k - 1][idx] + \
+                            round(sum(launch_info_lists.payload_mass[i]) * 1000)
+                    else:
+                        self.total_launch_mass_steps[k] = self.total_launch_mass_steps[k - 1]
+                        self.total_launch_mass_steps[k][idx] = \
+                            self.total_launch_mass_steps[k - 1][idx] + \
+                            round(launch_info_lists.payload_mass[i][0] * 1000)
                 else:
                     self.total_launch_energy_steps[k][idx] = launch_info_lists.orbital_energy[i]
                     self.total_launch_s_energy_steps[k][idx] = \
                         launch_info_lists.s_orbital_energy[i]
+                    if len(launch_info_lists.payload_mass[i]) > 1:
+                        self.total_launch_mass_steps[k][idx] = \
+                            round(sum(launch_info_lists.payload_mass[i]) * 1000)
+                    else:
+                        self.total_launch_mass_steps[k][idx] = \
+                            round(launch_info_lists.payload_mass[i][0] * 1000)
             else:
                 j = j + 1
             i = i + 1
@@ -194,6 +213,16 @@ def energy_update_scale_value(temp, position):
     return '{result}'.format(result=result)
 
 
+def mass_update_scale_value(temp, position):
+    """
+    :param temp:
+    :param position:
+    :return:
+    """
+    result = int(temp / 1000)
+    return '{result}'.format(result=result)
+
+
 def plot_launch_energy_by_country(launch_statistics,
                                   launch_info_lists,
                                   config_dict):
@@ -256,8 +285,8 @@ def plot_launch_energy_by_country(launch_statistics,
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=16)
-    plt.ylabel('能量\n(太焦耳，TJ)', fontproperties=fprop, rotation=0, fontsize=16)
+    plt.xlabel('时间', fontproperties=fprop, fontsize=18)
+    plt.ylabel('能量\n(太焦耳)\n(TJ)', fontproperties=fprop, rotation=0, fontsize=14)
     ax.xaxis.set_label_coords(0.5, -0.06)
     ax.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -297,8 +326,8 @@ def plot_launch_energy_by_country(launch_statistics,
 
 
 def plot_launch_s_energy_by_country(launch_statistics,
-                                           launch_info_lists,
-                                           config_dict):
+                                    launch_info_lists,
+                                    config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
@@ -358,8 +387,8 @@ def plot_launch_s_energy_by_country(launch_statistics,
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=14)
-    plt.ylabel('比能量\n(吉焦耳/千克)\n(GJ/kg)', fontproperties=fprop, rotation=0, fontsize=14)
+    plt.xlabel('时间', fontproperties=fprop, fontsize=18)
+    plt.ylabel('比能量\n(吉焦耳/千克)\n(GJ/kg)', fontproperties=fprop, rotation=0, fontsize=12)
     ax.xaxis.set_label_coords(0.5, -0.06)
     ax.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -396,3 +425,105 @@ def plot_launch_s_energy_by_country(launch_statistics,
     cc_img_ax.axis('off')
     plt.imshow(cc_img)
     plt.savefig(config_dict['s_energy_figure_filename'])
+
+
+def plot_launch_mass_by_country(launch_statistics,
+                                launch_info_lists,
+                                config_dict):
+    """
+    :param launch_statistics: A LaunchStatistics object.
+    :param launch_info_lists: A LaunchInfoLists object.
+    :param config_dict: A dictionary to filter out unwanted data files.
+    :return None:
+    """
+    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
+    fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
+    fprop = fm.FontProperties(fname=constants.FONT_PATH)
+
+    x_min = config_dict['time_filter'][0]
+
+    successful_launch_time = []
+    total_length = len(launch_info_lists.time)
+    i = 0
+    while i < total_length:
+        if launch_info_lists.launch_result[i]:
+            successful_launch_time.append(launch_info_lists.time[i])
+        i = i + 1
+
+    x_value = [x_min] + successful_launch_time
+    x_max = config_dict['time_filter'][1]
+    x_value.append(x_max)
+
+    fig, ax = plt.subplots(1,
+                           figsize=constants.DEFAULT_FIGSIZE,
+                           dpi=constants.DEFAULT_DPI)
+
+    for j in numpy.arange(0, len(launch_statistics.countries)):
+        y_value = launch_statistics.total_launch_mass_steps[:, j]
+        y_value = numpy.append(0, y_value)
+        y_value = numpy.append(y_value, y_value[-1])
+        label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
+        plt.plot(x_value, y_value,
+                 drawstyle='steps-post',
+                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 label='{country}({number})'.format(
+                     country=launch_statistics.countries[j],
+                     number=label_value),
+                 linewidth=3)
+    plt.legend(prop=fprop, loc=2)
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
+    ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+
+    text = """截至UTC时间：{end_time}
+绘制者：@旋火_SwingFire
+绘制脚本：https://github.com/Bourshevik0/plot_launch
+本作品采用 CC BY-NC-SA 4.0 进行许可
+(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
+""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
+
+    ax.text(0.2, 0.95, text,
+            fontproperties=fprop, color='grey',
+            transform=ax.transAxes, va='top')
+
+    title_text = config_dict.get('mass_figure_title')
+    if title_text:
+        plt.title(label=title_text,
+                  y=1.01, fontproperties=fprop_title, fontsize=35)
+    plt.xlabel('时间', fontproperties=fprop, fontsize=16)
+    plt.ylabel('质量\n(吨，t)', fontproperties=fprop, rotation=0, fontsize=16)
+    ax.xaxis.set_label_coords(0.5, -0.06)
+    ax.yaxis.set_label_coords(1.075, 0.5)
+    plt.ylim(ymin=0)
+    plt.xlim(x_min,
+             xmax=x_max)
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position('right')
+
+    for i in ax.yaxis.get_major_locator().tick_values(0, ax.get_ylim()[1]):
+        plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
+
+    i = 1
+    d = (1, 16)
+    j = 1
+    datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+                                   month=i,
+                                   day=d[j])
+
+    while datetime_i < x_max and i < 13:
+        datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+                                       month=i,
+                                       day=d[j])
+        plt.axvline(x=datetime_i,
+                    color=constants.DEFAULT_AXLINE_COLOR,
+                    linestyle='solid',
+                    linewidth=1)
+        i = i + j % 2
+        j = j + 1
+        j = j % 2
+
+    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
+    cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
+    cc_img_ax.imshow(cc_img)
+    cc_img_ax.axis('off')
+    plt.imshow(cc_img)
+    plt.savefig(config_dict['mass_figure_filename'])

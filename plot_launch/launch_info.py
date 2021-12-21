@@ -16,33 +16,33 @@ import os
 from plot_launch import constants
 
 
-class PayloadInfoLists:  # pylint: disable=too-few-public-methods
-    """
-    Class for the data of orbital payloads of an orbital launch.
-    """
-
-    def __init__(self):
-        self.payload_info = []
-        self.payload_man = []
-        self.payload_operator = []
-        self.payload_mass = []
-        self.payload_type = []
-
-    def append_dict(self,
-                    data_dict):
-        """
-        :param data_dict:  A dictionary of raw data from a single launch.
-        :return: None
-        """
-        self.payload_operator.append(data_dict.get('载荷运营方'))
-        self.payload_man.append(data_dict.get('载荷研制方'))
-        self.payload_info.append(data_dict.get('载荷信息'))
-
-        mass_list = list(map(float, re.findall(r'\d+\.?\d+|\d+吨', self.payload_info[-1])))
-        if mass_list:
-            self.payload_mass.append(mass_list[0])
-        else:
-            self.payload_mass.append(None)
+# class PayloadInfoLists:  # pylint: disable=too-few-public-methods
+#     """
+#     Class for the data of orbital payloads of an orbital launch.
+#     """
+#
+#     def __init__(self):
+#         self.payload_info = []
+#         self.payload_man = []
+#         self.payload_operator = []
+#         self.payload_mass = []
+#         self.payload_type = []
+#
+#     def append_dict(self,
+#                     data_dict):
+#         """
+#         :param data_dict:  A dictionary of raw data from a single launch.
+#         :return: None
+#         """
+#         self.payload_operator.append(data_dict.get('载荷运营方'))
+#         self.payload_man.append(data_dict.get('载荷研制方'))
+#         self.payload_info.append(data_dict.get('载荷信息'))
+#
+#         mass_list = list(map(float, re.findall(r'\d+\.?\d+|\d+吨', self.payload_info[-1])))
+#         if mass_list:
+#             self.payload_mass.append(mass_list[0])
+#         else:
+#             self.payload_mass.append(None)
 
 
 class LaunchInfoLists:  # pylint: disable=too-few-public-methods
@@ -173,9 +173,11 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         if not result:
             result = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', self.payload_info[-1])))
             if not result:
-                result = '0吨'
+                result = [0.0]
             else:
-                result = '{value}吨'.format(value=result[0])
+                result = [result[0]]
+        else:
+            result = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', result)))
         self.payload_mass.append(result)
 
         self.launcher.append(data_dict.get('载具'))
@@ -193,13 +195,17 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             self.launch_result.append(True)
             s_orbital_energy_list = get_specific_orbital_energy(self.orbit[-1])
             self.s_orbital_energy.append(round(max(s_orbital_energy_list) / 10000))
-            # unit 10kJ
+            # unit 10J
             self.orbital_energy.append(get_orbital_energy(s_orbital_energy_list,
                                                           self.payload_mass[-1]))
             if self.orbital_energy[-1] == 0:
                 print('发射时间：{time}'.format(time=self.time[-1]))
+                print('火箭：{rocket}'.format(rocket=self.launcher[-1]))
                 print('载荷信息：{info}'.format(info=self.payload_info[-1]))
-                print('轨道额外能量：{content}\n'.format(content=self.orbital_energy[-1]))
+                print('轨道能量：{content:.3g}GJ'.format(
+                    content=self.orbital_energy[-1] / 100))
+                print('轨道比能量：{content:.3g}MJ/kg\n'.format(
+                    content=self.s_orbital_energy[-1] / 100))
         else:
             self.launch_result.append(False)
             self.orbital_energy.append(0)
@@ -225,7 +231,7 @@ def get_specific_orbital_energy(orbit_str):
     for orbit_str in orbit_str_list:
         if 'C₃' in orbit_str:
             specific_orbital_energy = \
-                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0] / 2
+                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0] / 2 * 1E6
             # Reference: https://en.wikipedia.org/wiki/Characteristic_energy
         elif '半长轴' in orbit_str:
             semi_major_axis = \
@@ -235,7 +241,8 @@ def get_specific_orbital_energy(orbit_str):
         else:
             orbit_str = orbit_str.replace('km', '')
             apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit_str)))
-            semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 + constants.NOMINAL_EARTH_RADIUS
+            semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 * 1E3 \
+                + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         result_list.append((specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY))
 
@@ -244,15 +251,13 @@ def get_specific_orbital_energy(orbit_str):
 
 
 def get_orbital_energy(specific_energy_list,
-                       mass_str):
+                       mass_list):
     """
     Get total orbital energy of the payloads of a launch.
     :param specific_energy_list: The specific potential extra orbital energy list from payload(s).
-    :param mass_str: A string contains basic mass data.
+    :param mass_list: A list contains basic mass data.
     :return result: The potential extra orbital energy list from payload(s).
     """
-    mass_list = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', mass_str)))
-
     i = 0
     result = 0.0
     for mass in mass_list:
