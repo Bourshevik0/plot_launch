@@ -59,6 +59,9 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.mission_name = []
         self.flight_num = []
         self.launch_provider = []
+        self.payload_provider = []
+        self.payload_operator = []
+        self.payload_developer = []
         self.payload_info = []
         self.payload_mass = []
         self.launcher = []
@@ -141,7 +144,24 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.location.append(data_dict.get('位置'))
         self.mission_name.append(data_dict.get('任务名'))
         self.flight_num.append(data_dict.get('飞行编号'))
-        self.launch_provider.append(data_dict.get('发射提供方'))
+
+        result = data_dict.get('发射提供方')
+        if not result:
+            self.launch_provider.append(data_dict.get('发射与载荷'))
+        else:
+            self.launch_provider.append(result)
+
+        result = data_dict.get('载荷运营方')
+        if not result:
+            self.payload_operator.append(data_dict.get('发射与载荷'))
+        else:
+            self.payload_operator.append(result)
+
+        result = data_dict.get('载荷研制方')
+        if not result:
+            self.payload_developer.append(self.payload_operator[-1])
+        else:
+            self.payload_developer.append(result)
 
         result = data_dict.get('载荷信息')
         if not result:
@@ -174,9 +194,10 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             self.launch_result.append(True)
             self.orbital_energy.append(get_orbital_energy(self.orbit[-1],
                                                           self.payload_mass[-1]))
-            # print("发射时间：{time}".format(time=self.time[-1]))
-            # print("载荷信息：{info}".format(info=self.payload_info[-1]))
-            # print("轨道额外能量：{content}\n".format(content=self.orbital_energy[-1]))
+            if self.orbital_energy[-1] == 0:
+                print("发射时间：{time}".format(time=self.time[-1]))
+                print("载荷信息：{info}".format(info=self.payload_info[-1]))
+                print("轨道额外能量：{content}\n".format(content=self.orbital_energy[-1]))
         else:
             self.launch_result.append(False)
             self.orbital_energy.append(0.0)

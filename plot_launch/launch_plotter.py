@@ -95,7 +95,7 @@ def plot_launch_times_by_country(launch_statistics,
                               month=1,
                               day=1)
     x_value = [x_min] + launch_info_lists.time
-    x_max = datetime.datetime.utcnow()
+    x_max = constants.CURRENT_TIME
     x_value.append(x_max)
 
     fig, ax = plt.subplots(1,
@@ -122,7 +122,7 @@ def plot_launch_times_by_country(launch_statistics,
 绘制脚本：https://github.com/Bourshevik0/plot_launch
 本作品采用 CC BY-NC-SA 4.0 进行许可
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(cur_time=constants.CURRENT_TIME)
+""".format(cur_time=constants.CURRENT_TIME_STR)
 
     ax.text(0.2, 0.95, text,
             fontproperties=fprop, color="grey",
@@ -209,7 +209,7 @@ def plot_launch_energy_by_country(launch_statistics,
         i = i + 1
 
     x_value = [x_min] + successful_launch_time
-    x_max = datetime.datetime.utcnow()
+    x_max = constants.CURRENT_TIME
     x_value.append(x_max)
 
     fig, ax = plt.subplots(1,
@@ -220,14 +220,15 @@ def plot_launch_energy_by_country(launch_statistics,
         y_value = launch_statistics.total_launch_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
+        label_value = '{value:.3g}TJ'.format(value=round(y_value[-1] / 100000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
                  color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
                  label="{country}({number})".format(
                      country=launch_statistics.countries[j],
-                     number=str(round(y_value[-1] / 100000, 2)) + 'TJ'),
+                     number=label_value),
                  linewidth=3)
-    plt.legend(prop=fprop)
+    plt.legend(prop=fprop, loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -236,7 +237,7 @@ def plot_launch_energy_by_country(launch_statistics,
 绘制脚本：https://github.com/Bourshevik0/plot_launch
 本作品采用 CC BY-NC-SA 4.0 进行许可
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(cur_time=constants.CURRENT_TIME)
+""".format(cur_time=constants.CURRENT_TIME_STR)
 
     ax.text(0.2, 0.95, text,
             fontproperties=fprop, color="grey",
@@ -254,11 +255,8 @@ def plot_launch_energy_by_country(launch_statistics,
     ax.yaxis.tick_right()
     ax.yaxis.set_label_position('right')
 
-    # y_max = ax.get_ylim()[1] - 3
-    # i = 5
-    # while i < y_max:
-    #     plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
-    #     i = i + 5
+    for i in ax.yaxis.get_major_locator().tick_values(0, ax.get_ylim()[1]):
+        plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
 
     i = 1
     d = (1, 16)

@@ -26,7 +26,7 @@ def main():
                                                 launch_info_lists=launch_info_lists)
     launch_energy_figure_name = \
         os.path.join(constants.HERE,
-                     str(datetime.datetime.utcnow().year) + '_launch_energy_by_countries_step.png')
+                     str(constants.CURRENT_TIME.year) + '_launch_energy_by_countries_step.png')
     launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
                                                  launch_info_lists=launch_info_lists,
                                                  figure_filename=launch_energy_figure_name)

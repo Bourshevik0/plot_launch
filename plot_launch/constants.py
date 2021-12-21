@@ -37,23 +37,24 @@ RAW_CODE_DICT = {
     '日本': 'JP'
 }
 
-CURRENT_TIME = datetime.datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S')
+CURRENT_TIME = datetime.datetime.utcnow()
+CURRENT_TIME_STR = CURRENT_TIME.strftime('%Y/%m/%d %H:%M:%S')
 
 HERE = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 FONT_NAME = 'font/sarasa-gothic-sc-semibold.ttf'
 FONT_PATH = os.path.join(HERE, FONT_NAME)
 DEFAULT_DATA_DIR = 'launchinfo'
-DEFAULT_DATA_FILTER = str(datetime.datetime.utcnow().year)[-2:]
+DEFAULT_DATA_FILTER = str(CURRENT_TIME.year)[-2:]
 DATA_PATH = os.path.join(HERE, DEFAULT_DATA_DIR)
 LICENSE_IMG_NAME = 'img/CC BY-NC-SA 4.0.png'
 LICENSE_IMG_PATH = os.path.join(HERE, LICENSE_IMG_NAME)
 DEFAULT_FIGURE_FILENAME = \
-    str(datetime.datetime.utcnow().year) + '_launch_time_by_countries_step.png'
+    str(CURRENT_TIME.year) + '_launch_time_by_countries_step.png'
 FIGURE_PATH = os.path.join(HERE, DEFAULT_FIGURE_FILENAME)
 
 ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '预期轨道')
 
-DEFAULT_DPI = 300
+DEFAULT_DPI = 120
 DEFAULT_FIGSIZE = (16, 9)
 DEFAULT_FONTSIZE = 14
 DEFAULT_AXLINE_COLOR = '#80808080'
