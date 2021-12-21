@@ -126,9 +126,9 @@ def plot_launch_times_by_country(launch_statistics,
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
-    fig, ax = plt.subplots(1,
-                           figsize=constants.DEFAULT_FIGSIZE,
-                           dpi=constants.DEFAULT_DPI)
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
 
     for j in numpy.arange(0, len(launch_statistics.countries)):
         y_value = launch_statistics.total_launch_steps[:, j]
@@ -142,8 +142,8 @@ def plot_launch_times_by_country(launch_statistics,
                      number=str(y_value[-1])),
                  linewidth=3)
     plt.legend(prop=fprop)
-    ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
+    axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
+    axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
 
     text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
@@ -152,9 +152,9 @@ def plot_launch_times_by_country(launch_statistics,
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 """.format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
-    ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color='grey',
-            transform=ax.transAxes, va='top')
+    axes.text(0.2, 0.95, text,
+              fontproperties=fprop, color='grey',
+              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('launch_times_figure_title')
     if title_text:
@@ -162,31 +162,31 @@ def plot_launch_times_by_country(launch_statistics,
                   fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=18)
     plt.ylabel('发射次数', fontproperties=fprop, rotation=0, fontsize=18)
-    ax.xaxis.set_label_coords(0.5, -0.06)
-    ax.yaxis.set_label_coords(1.075, 0.5)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
     plt.xlim(x_min,
              xmax=x_max)
-    ax.yaxis.tick_right()
-    ax.yaxis.set_label_position('right')
+    axes.yaxis.tick_right()
+    axes.yaxis.set_label_position('right')
 
-    y_max = ax.get_ylim()[1] - 3
+    y_max = axes.get_ylim()[1] - 3
     i = 5
     while i < y_max:
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
         i = i + 5
 
     i = 1
-    d = (1, 16)
+    day_tuple = (1, 16)
     j = 1
     datetime_i = datetime.datetime(year=launch_info_lists.time[0].year,
                                    month=i,
-                                   day=d[j])
+                                   day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
         datetime_i = datetime.datetime(year=launch_info_lists.time[0].year,
                                        month=i,
-                                       day=d[j])
+                                       day=day_tuple[j])
         plt.axvline(x=datetime_i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',
@@ -250,9 +250,9 @@ def plot_launch_energy_by_country(launch_statistics,
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
-    fig, ax = plt.subplots(1,
-                           figsize=constants.DEFAULT_FIGSIZE,
-                           dpi=constants.DEFAULT_DPI)
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
 
     for j in numpy.arange(0, len(launch_statistics.countries)):
         y_value = launch_statistics.total_launch_energy_steps[:, j]
@@ -268,7 +268,7 @@ def plot_launch_energy_by_country(launch_statistics,
                  linewidth=3)
     plt.legend(prop=fprop, loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+    axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
     text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
@@ -277,9 +277,9 @@ def plot_launch_energy_by_country(launch_statistics,
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 """.format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
-    ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color='grey',
-            transform=ax.transAxes, va='top')
+    axes.text(0.2, 0.95, text,
+              fontproperties=fprop, color='grey',
+              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('energy_figure_title')
     if title_text:
@@ -287,28 +287,28 @@ def plot_launch_energy_by_country(launch_statistics,
                   y=1.01, fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=18)
     plt.ylabel('能量\n(太焦耳)\n(TJ)', fontproperties=fprop, rotation=0, fontsize=14)
-    ax.xaxis.set_label_coords(0.5, -0.06)
-    ax.yaxis.set_label_coords(1.075, 0.5)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
     plt.xlim(x_min,
              xmax=x_max)
-    ax.yaxis.tick_right()
-    ax.yaxis.set_label_position('right')
+    axes.yaxis.tick_right()
+    axes.yaxis.set_label_position('right')
 
-    for i in ax.yaxis.get_major_locator().tick_values(0, ax.get_ylim()[1]):
+    for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
 
     i = 1
-    d = (1, 16)
+    day_tuple = (1, 16)
     j = 1
     datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                    month=i,
-                                   day=d[j])
+                                   day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
         datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                        month=i,
-                                       day=d[j])
+                                       day=day_tuple[j])
         plt.axvline(x=datetime_i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',
@@ -352,9 +352,9 @@ def plot_launch_s_energy_by_country(launch_statistics,
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
-    fig, ax = plt.subplots(1,
-                           figsize=constants.DEFAULT_FIGSIZE,
-                           dpi=constants.DEFAULT_DPI)
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
 
     for j in numpy.arange(0, len(launch_statistics.countries)):
         y_value = launch_statistics.total_launch_s_energy_steps[:, j]
@@ -370,7 +370,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
                  linewidth=3)
     plt.legend(prop=fprop, loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+    axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
     text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
@@ -379,9 +379,9 @@ def plot_launch_s_energy_by_country(launch_statistics,
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 """.format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
-    ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color='grey',
-            transform=ax.transAxes, va='top')
+    axes.text(0.2, 0.95, text,
+              fontproperties=fprop, color='grey',
+              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('s_energy_figure_title')
     if title_text:
@@ -389,28 +389,28 @@ def plot_launch_s_energy_by_country(launch_statistics,
                   y=1.01, fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=18)
     plt.ylabel('比能量\n(吉焦耳/千克)\n(GJ/kg)', fontproperties=fprop, rotation=0, fontsize=12)
-    ax.xaxis.set_label_coords(0.5, -0.06)
-    ax.yaxis.set_label_coords(1.075, 0.5)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
     plt.xlim(x_min,
              xmax=x_max)
-    ax.yaxis.tick_right()
-    ax.yaxis.set_label_position('right')
+    axes.yaxis.tick_right()
+    axes.yaxis.set_label_position('right')
 
-    for i in ax.yaxis.get_major_locator().tick_values(0, ax.get_ylim()[1]):
+    for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
 
     i = 1
-    d = (1, 16)
+    day_tuple = (1, 16)
     j = 1
     datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                    month=i,
-                                   day=d[j])
+                                   day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
         datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                        month=i,
-                                       day=d[j])
+                                       day=day_tuple[j])
         plt.axvline(x=datetime_i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',
@@ -454,9 +454,9 @@ def plot_launch_mass_by_country(launch_statistics,
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
-    fig, ax = plt.subplots(1,
-                           figsize=constants.DEFAULT_FIGSIZE,
-                           dpi=constants.DEFAULT_DPI)
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
 
     for j in numpy.arange(0, len(launch_statistics.countries)):
         y_value = launch_statistics.total_launch_mass_steps[:, j]
@@ -472,7 +472,7 @@ def plot_launch_mass_by_country(launch_statistics,
                  linewidth=3)
     plt.legend(prop=fprop, loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+    axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
     text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
@@ -481,9 +481,9 @@ def plot_launch_mass_by_country(launch_statistics,
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
 """.format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
-    ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color='grey',
-            transform=ax.transAxes, va='top')
+    axes.text(0.2, 0.95, text,
+              fontproperties=fprop, color='grey',
+              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('mass_figure_title')
     if title_text:
@@ -491,28 +491,28 @@ def plot_launch_mass_by_country(launch_statistics,
                   y=1.01, fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=16)
     plt.ylabel('质量\n(吨，t)', fontproperties=fprop, rotation=0, fontsize=16)
-    ax.xaxis.set_label_coords(0.5, -0.06)
-    ax.yaxis.set_label_coords(1.075, 0.5)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
     plt.xlim(x_min,
              xmax=x_max)
-    ax.yaxis.tick_right()
-    ax.yaxis.set_label_position('right')
+    axes.yaxis.tick_right()
+    axes.yaxis.set_label_position('right')
 
-    for i in ax.yaxis.get_major_locator().tick_values(0, ax.get_ylim()[1]):
+    for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
 
     i = 1
-    d = (1, 16)
+    day_tuple = (1, 16)
     j = 1
     datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                    month=i,
-                                   day=d[j])
+                                   day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
         datetime_i = datetime.datetime(year=successful_launch_time[0].year,
                                        month=i,
-                                       day=d[j])
+                                       day=day_tuple[j])
         plt.axvline(x=datetime_i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',

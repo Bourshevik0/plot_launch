@@ -52,7 +52,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         # Common data of launches
-        self.id = []
+        self.identifier = []
         self.launcher_man_country = []
         self.time = []
         self.location = []
@@ -137,7 +137,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         :return None:
         """
         # common statistics of launches
-        self.id.append(data_dict.get('编号'))
+        self.identifier.append(data_dict.get('编号'))
         self.launcher_man_country.append(data_dict.get('火箭制造方'))
 
         self.location.append(data_dict.get('位置'))
@@ -228,19 +228,19 @@ def get_specific_orbital_energy(orbit_str):
 
     i = 0
     result_list = []
-    for orbit_str in orbit_str_list:
-        if 'C₃' in orbit_str:
+    for orbit in orbit_str_list:
+        if 'C₃' in orbit:
             specific_orbital_energy = \
-                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0] / 2 * 1E6
+                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit)))[0] / 2 * 1E6
             # Reference: https://en.wikipedia.org/wiki/Characteristic_energy
-        elif '半长轴' in orbit_str:
+        elif '半长轴' in orbit:
             semi_major_axis = \
                 list(map(float, re.findall(r'-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *\+?\ *[0-9]+)?',
-                                           orbit_str)))[0] * 1000.0
+                                           orbit)))[0] * 1000.0
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         else:
-            orbit_str = orbit_str.replace('km', '')
-            apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit_str)))
+            orbit = orbit.replace('km', '')
+            apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit)))
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 * 1E3 \
                 + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)

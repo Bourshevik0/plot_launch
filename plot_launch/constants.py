@@ -56,7 +56,8 @@ DEFAULT_FONTSIZE = 14
 DEFAULT_AXLINE_COLOR = '#80808080'
 
 GEO_CONSTANT = 3.9860044E14
-# reference https://en.wikipedia.org/wiki/Standard_gravitational_parameter#Geocentric_gravitational_constant
+# reference https://en.wikipedia.org/wiki/Standard_gravitational_parameter
+# #Geocentric_gravitational_constant
 
 EARTH_SURFACE_POTENTIAL_ENERGY = 0.0 - 6.26E7
 # reference https://en.wikipedia.org/wiki/Specific_orbital_energy#Examples
