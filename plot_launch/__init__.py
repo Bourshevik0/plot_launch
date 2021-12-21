@@ -39,11 +39,17 @@ def main():
             'launch_times_figure_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            'energy_figure_title': '{year}年世界航天入轨发射轨道额外能量统计'.format(
+            'energy_figure_title': '{year}年世界航天入轨发射轨道能量统计'.format(
                 year=constants.CURRENT_TIME.year),
             'energy_figure_filename':
                 os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
-                    year=constants.CURRENT_TIME.year))
+                    year=constants.CURRENT_TIME.year)),
+            's_energy_figure_title': '{year}年世界航天入轨发射轨道比能量统计'.format(
+                year=constants.CURRENT_TIME.year),
+            's_energy_figure_filename':
+                os.path.join(constants.HERE,
+                             '{year}_launch_s_energy_by_countries_step.png'.format(
+                                 year=constants.CURRENT_TIME.year)),
         }
 
     launch_info_lists = launch_info.get_launch_info_from_files(constants.DATA_PATH,
@@ -58,3 +64,7 @@ def main():
         launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
                                                      launch_info_lists=launch_info_lists,
                                                      config_dict=config_dict)
+    if 's_energy_figure_title' in config_dict:
+        launch_plotter.plot_launch_s_energy_by_country(launch_statistics=launch_statistics,
+                                                       launch_info_lists=launch_info_lists,
+                                                       config_dict=config_dict)

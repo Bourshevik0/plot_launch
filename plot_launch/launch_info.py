@@ -66,6 +66,8 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.payload_mass = []
         self.launcher = []
         self.orbit = []
+        self.s_orbital_energy = []
+        # specific orbital energy
         self.orbital_energy = []
         self.launch_result = []
         self.remarks = []
@@ -189,7 +191,10 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             result = data_dict.get('结果(发射与回收)')
         if result == '成功':
             self.launch_result.append(True)
-            self.orbital_energy.append(get_orbital_energy(self.orbit[-1],
+            s_orbital_energy_list = get_specific_orbital_energy(self.orbit[-1])
+            self.s_orbital_energy.append(round(max(s_orbital_energy_list) / 10000))
+            # unit 10kJ
+            self.orbital_energy.append(get_orbital_energy(s_orbital_energy_list,
                                                           self.payload_mass[-1]))
             if self.orbital_energy[-1] == 0:
                 print('发射时间：{time}'.format(time=self.time[-1]))
@@ -197,7 +202,8 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 print('轨道额外能量：{content}\n'.format(content=self.orbital_energy[-1]))
         else:
             self.launch_result.append(False)
-            self.orbital_energy.append(0.0)
+            self.orbital_energy.append(0)
+            self.s_orbital_energy.append(0.0)
 
         self.remarks.append(data_dict.get('备注'))
 
@@ -206,23 +212,21 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship.append(data_dict.get('回收船'))
 
 
-def get_orbital_energy(orbit_str,
-                       mass_str):
+def get_specific_orbital_energy(orbit_str):
     """
-    Get potential extra orbital energy from payload orbit and payload mass of the index number.
+    Get potential extra specific orbital energy from payload orbit of the orbit_str.
     :param orbit_str: A string contains basic orbit data.
-    :param mass_str: A string contains basic mass data.
-    :return result: The potential extra orbital energy from payload(s).
+    :return result_list: The specific potential extra orbital energy list from payload(s).
     """
     orbit_str_list = orbit_str.split('；')
-    mass_list = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', mass_str)))
 
     i = 0
-    result = 0.0
+    result_list = []
     for orbit_str in orbit_str_list:
         if 'C₃' in orbit_str:
             specific_orbital_energy = \
-                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0]
+                list(map(float, re.findall(r'(\d+\.?\d+|\d+)km', orbit_str)))[0] / 2
+            # Reference: https://en.wikipedia.org/wiki/Characteristic_energy
         elif '半长轴' in orbit_str:
             semi_major_axis = \
                 list(map(float, re.findall(r'-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *\+?\ *[0-9]+)?',
@@ -233,10 +237,27 @@ def get_orbital_energy(orbit_str,
             apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit_str)))
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
-        result = (specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY) * \
-                 mass_list[i] / 1E4 + result
-        # * 1000 / unit 10MJ
+        result_list.append((specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY))
+
         i = i + 1
+    return result_list
+
+
+def get_orbital_energy(specific_energy_list,
+                       mass_str):
+    """
+    Get total orbital energy of the payloads of a launch.
+    :param specific_energy_list: The specific potential extra orbital energy list from payload(s).
+    :param mass_str: A string contains basic mass data.
+    :return result: The potential extra orbital energy list from payload(s).
+    """
+    mass_list = list(map(float, re.findall(r'(\d+\.?\d+|\d+)吨', mass_str)))
+
+    i = 0
+    result = 0.0
+    for mass in mass_list:
+        result = specific_energy_list[i] * mass / 1E4 + result
+        # 1E3(ton to kg) / 1E7 = 1E4, unit 10MJ
     return round(result)
 
 
