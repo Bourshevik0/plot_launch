@@ -7,7 +7,7 @@ Defines plot_launch's entry point.
 # pylint: disable=no-member, protected-access
 import sys
 
-if __package__ is None and not hasattr(sys, "frozen"):
+if __package__ is None and not hasattr(sys, 'frozen'):
     # direct call of __main__.py
     # Reference: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/__main__.py
     import os.path
@@ -16,7 +16,7 @@ if __package__ is None and not hasattr(sys, "frozen"):
 
 # Any changes to the path and your own modules
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # On Windows calling this function is necessary.
     # if sys.platform.startswith('win'):
     #     multiprocessing.freeze_support()

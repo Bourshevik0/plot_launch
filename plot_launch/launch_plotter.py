@@ -80,22 +80,20 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
 
 def plot_launch_times_by_country(launch_statistics,
                                  launch_info_lists,
-                                 figure_filename=constants.FIGURE_PATH):
+                                 config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
-    :param figure_filename: The filename to save the plotted figure.
+    :param config_dict: A dictionary to filter out unwanted data files.
     :return None:
     """
     matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
     fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
     fprop = fm.FontProperties(fname=constants.FONT_PATH)
 
-    x_min = datetime.datetime(year=launch_info_lists.time[0].year,
-                              month=1,
-                              day=1)
+    x_min = config_dict['time_filter'][0]
     x_value = [x_min] + launch_info_lists.time
-    x_max = constants.CURRENT_TIME
+    x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
     fig, ax = plt.subplots(1,
@@ -109,7 +107,7 @@ def plot_launch_times_by_country(launch_statistics,
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
                  color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
-                 label="{country}({number})".format(
+                 label='{country}({number})'.format(
                      country=launch_statistics.countries[j],
                      number=str(y_value[-1])),
                  linewidth=3)
@@ -117,19 +115,21 @@ def plot_launch_times_by_country(launch_statistics,
     ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
 
-    text = """截至UTC时间：{cur_time}
+    text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
 绘制脚本：https://github.com/Bourshevik0/plot_launch
 本作品采用 CC BY-NC-SA 4.0 进行许可
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(cur_time=constants.CURRENT_TIME_STR)
+""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
     ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color="grey",
+            fontproperties=fprop, color='grey',
             transform=ax.transAxes, va='top')
-    plt.title(label='{year}年世界航天入轨发射次数统计'.format(
-        year=launch_info_lists.time[0].year), y=1.01,
-        fontproperties=fprop_title, fontsize=35)
+
+    title_text = config_dict.get('launch_times_figure_title')
+    if title_text:
+        plt.title(label=title_text, y=1.01,
+                  fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=18)
     plt.ylabel('发射次数', fontproperties=fprop, rotation=0, fontsize=18)
     ax.xaxis.set_label_coords(0.5, -0.06)
@@ -170,7 +170,7 @@ def plot_launch_times_by_country(launch_statistics,
     cc_img_ax.imshow(cc_img)
     cc_img_ax.axis('off')
     plt.imshow(cc_img)
-    plt.savefig(figure_filename)
+    plt.savefig(config_dict['launch_times_figure_filename'])
 
 
 def energy_update_scale_value(temp, position):
@@ -180,25 +180,23 @@ def energy_update_scale_value(temp, position):
     :return:
     """
     result = temp / 100000
-    return "{result}TJ".format(result=result)
+    return '{result}TJ'.format(result=result)
 
 
 def plot_launch_energy_by_country(launch_statistics,
                                   launch_info_lists,
-                                  figure_filename=constants.FIGURE_PATH):
+                                  config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
-    :param figure_filename: The filename to save the plotted figure.
+    :param config_dict: A dictionary to filter out unwanted data files.
     :return None:
     """
     matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
     fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
     fprop = fm.FontProperties(fname=constants.FONT_PATH)
 
-    x_min = datetime.datetime(year=launch_info_lists.time[0].year,
-                              month=1,
-                              day=1)
+    x_min = config_dict['time_filter'][0]
 
     successful_launch_time = []
     total_length = len(launch_info_lists.time)
@@ -209,7 +207,7 @@ def plot_launch_energy_by_country(launch_statistics,
         i = i + 1
 
     x_value = [x_min] + successful_launch_time
-    x_max = constants.CURRENT_TIME
+    x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
     fig, ax = plt.subplots(1,
@@ -224,7 +222,7 @@ def plot_launch_energy_by_country(launch_statistics,
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
                  color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
-                 label="{country}({number})".format(
+                 label='{country}({number})'.format(
                      country=launch_statistics.countries[j],
                      number=label_value),
                  linewidth=3)
@@ -232,19 +230,21 @@ def plot_launch_energy_by_country(launch_statistics,
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
-    text = """截至UTC时间：{cur_time}
+    text = """截至UTC时间：{end_time}
 绘制者：@旋火_SwingFire
 绘制脚本：https://github.com/Bourshevik0/plot_launch
 本作品采用 CC BY-NC-SA 4.0 进行许可
 (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(cur_time=constants.CURRENT_TIME_STR)
+""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
 
     ax.text(0.2, 0.95, text,
-            fontproperties=fprop, color="grey",
+            fontproperties=fprop, color='grey',
             transform=ax.transAxes, va='top')
-    plt.title(label='{year}年世界航天入轨发射轨道额外能量统计'.format(
-        year=successful_launch_time[0].year), y=1.01,
-        fontproperties=fprop_title, fontsize=35)
+
+    title_text = config_dict.get('energy_figure_title')
+    if title_text:
+        plt.title(label=title_text,
+                  y=1.01, fontproperties=fprop_title, fontsize=35)
     plt.xlabel('时间', fontproperties=fprop, fontsize=18)
     plt.ylabel('能量', fontproperties=fprop, rotation=0, fontsize=18)
     ax.xaxis.set_label_coords(0.5, -0.06)
@@ -282,4 +282,4 @@ def plot_launch_energy_by_country(launch_statistics,
     cc_img_ax.imshow(cc_img)
     cc_img_ax.axis('off')
     plt.imshow(cc_img)
-    plt.savefig(figure_filename)
+    plt.savefig(config_dict['energy_figure_filename'])

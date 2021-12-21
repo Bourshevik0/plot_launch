@@ -51,7 +51,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self):
-        # common data of launches
+        # Common data of launches
         self.id = []
         self.launcher_man_country = []
         self.time = []
@@ -80,11 +80,13 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
 
     @classmethod
     def from_raw_data(cls,
-                      raw_data):
+                      raw_data,
+                      config_dict):
         """
         Initialize a LaunchInfoLists object from raw_data.
         :param raw_data: A raw format of data of launches which separated by '\n\n' which is a
         string.
+        :param config_dict: A dictionary to filter out unwanted data files.
         :return launch_info_lists: An initialized LaunchInfoLists object.
         """
         launch_info_lists = cls()
@@ -113,6 +115,15 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                     last_key = the_rest[:j]
                 else:
                     data_dict[last_key] = data_dict[last_key] + text
+
+            time_str = data_dict.get('时间')
+            time_str_part = time_str[:time_str.find('(')]
+            time_obj = from_str_to_datetime(time_str_part)
+            if '+' in data_dict.get('时间'):
+                time_obj = time_obj - datetime.timedelta(hours=8)
+            if time_obj < config_dict['time_filter'][0] or time_obj > config_dict['time_filter'][1]:
+                continue
+            launch_info_lists.time.append(time_obj)
             launch_info_lists.append_dict(data_dict)
         return launch_info_lists
 
@@ -126,20 +137,6 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         # common statistics of launches
         self.id.append(data_dict.get('编号'))
         self.launcher_man_country.append(data_dict.get('火箭制造方'))
-
-        time_str = data_dict.get('时间')
-        time_str_part = time_str[:time_str.find('(')]
-        if time_str_part.count(':') < 2:
-            time_obj = datetime.datetime.strptime(time_str_part, '%Y-%m-%d %H:%M')
-        elif '.' not in time_str_part:
-            time_obj = datetime.datetime.strptime(time_str_part, '%Y-%m-%d %H:%M:%S')
-        else:
-            time_obj = datetime.datetime.strptime(time_str_part, '%Y-%m-%d %H:%M:%S.%f')
-
-        if '+' not in time_str:
-            self.time.append(time_obj)
-        else:
-            self.time.append(time_obj - datetime.timedelta(hours=8))
 
         self.location.append(data_dict.get('位置'))
         self.mission_name.append(data_dict.get('任务名'))
@@ -165,7 +162,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
 
         result = data_dict.get('载荷信息')
         if not result:
-            result = "{part1}；{part2}".format(
+            result = '{part1}；{part2}'.format(
                 part1=data_dict.get('主载荷信息'),
                 part2=data_dict.get('搭车载荷信息'))
         self.payload_info.append(result)
@@ -195,9 +192,9 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             self.orbital_energy.append(get_orbital_energy(self.orbit[-1],
                                                           self.payload_mass[-1]))
             if self.orbital_energy[-1] == 0:
-                print("发射时间：{time}".format(time=self.time[-1]))
-                print("载荷信息：{info}".format(info=self.payload_info[-1]))
-                print("轨道额外能量：{content}\n".format(content=self.orbital_energy[-1]))
+                print('发射时间：{time}'.format(time=self.time[-1]))
+                print('载荷信息：{info}'.format(info=self.payload_info[-1]))
+                print('轨道额外能量：{content}\n'.format(content=self.orbital_energy[-1]))
         else:
             self.launch_result.append(False)
             self.orbital_energy.append(0.0)
@@ -237,23 +234,23 @@ def get_orbital_energy(orbit_str,
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         result = (specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY) * \
-            mass_list[i] / 1E4 + result
+                 mass_list[i] / 1E4 + result
         # * 1000 / unit 10MJ
         i = i + 1
     return round(result)
 
 
 def get_launch_info_from_files(data_dir,
-                               filter_=constants.DEFAULT_DATA_FILTER):
+                               config_dict=None):
     """
-    Defines code to get launchinfo from multiple raw data files.
-    :param filter_: A filter to filter out unwanted data files.
+    Defines codes to get launchinfo from multiple raw data files.
+    :param config_dict: A dictionary to filter out unwanted data files.
     :param data_dir: A directory path contains several raw data files to read.
     :return LaunchInfoLists: An initialized LaunchInfoLists object.
     """
     dir_data = []
     for filename in os.listdir(data_dir):
-        if filter_ not in filename or not filename.endswith('txt'):
+        if config_dict['filename_filter'] not in filename or not filename.endswith('txt'):
             continue
         abs_path = os.path.join(data_dir, filename)
         with open(abs_path, encoding='utf-8') as data_file:
@@ -268,9 +265,46 @@ def get_launch_info_from_files(data_dir,
                 index = index + 1
             dir_data.extend(raw_list[:index])
     raw_data = '\n\n'.join(dir_data)
-    return LaunchInfoLists.from_raw_data(raw_data=raw_data)
+    return LaunchInfoLists.from_raw_data(raw_data=raw_data, config_dict=config_dict)
 
-# if __name__ == "__main__":
+
+def from_str_to_datetime(datetime_str,
+                         custom_format=None):
+    """
+    Get datetime object from a string depending on a custom format.
+    :param datetime_str: A string of datetime.
+    :param custom_format: A custom format of datetime.
+    :return:
+    """
+    if not custom_format:
+        if datetime_str.count(':') < 2:
+            time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
+        elif '.' not in datetime_str:
+            time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+        else:
+            time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S.%f')
+    else:
+        time_obj = datetime.datetime.strptime(datetime_str, custom_format)
+
+    return time_obj
+
+
+def prcs_config_dict(config_dict):
+    """
+    Process config dictionary.
+    :param config_dict: A dictionary to filter out unwanted data files.
+    :return config_dict: Same dictionary as the input but processed.
+    """
+    config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
+                                                       config_dict['time_filter_format']),
+                                  from_str_to_datetime(config_dict['time_filter'][1],
+                                                       config_dict['time_filter_format'])]
+    if config_dict['time_filter'][1] > constants.CURRENT_TIME:
+        config_dict['time_filter'][1] = constants.CURRENT_TIME
+    return config_dict
+
+
+# if __name__ == '__main__':
 #     here = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 #     os.chdir(here)
 #     data_dir = os.path.join(here, 'launchinfo')
