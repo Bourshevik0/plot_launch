@@ -9,7 +9,6 @@ import datetime
 
 # Import third-party modules
 import matplotlib
-import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from matplotlib.ticker import FuncFormatter
@@ -32,24 +31,26 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         """
         self.countries = numpy.unique(launch_info_lists.launcher_man_country)
         countries_dict = {value: key for key, value in enumerate(self.countries)}
-        countries_length = len(self.countries)
+        self.countries_length = len(self.countries)
         total_launch_times = len(launch_info_lists.time)
         self.total_launch_steps = numpy.zeros(
-            (len(launch_info_lists.time), countries_length), dtype=int)
-        self.launch_success = numpy.zeros(countries_length, dtype=int)
+            (len(launch_info_lists.time), self.countries_length), dtype=int)
+        self.successful_launch_time = []
+        self.launch_success = numpy.zeros(self.countries_length, dtype=int)
         self.total_launch_success = 0
-        self.launch_failure = numpy.zeros(countries_length, dtype=int)
+        self.launch_failure = numpy.zeros(self.countries_length, dtype=int)
         self.total_launch_failure = 0
-        self.launch_overall = numpy.zeros(countries_length, dtype=int)
+        self.launch_count = numpy.zeros(self.countries_length, dtype=int)
         for i in numpy.arange(0, total_launch_times):
             idx = countries_dict[launch_info_lists.launcher_man_country[i]]
             if launch_info_lists.launch_result[i]:
+                self.successful_launch_time.append(launch_info_lists.time[i])
                 self.launch_success[idx] += 1
                 self.total_launch_success += 1
             else:
                 self.launch_failure[idx] += 1
                 self.total_launch_failure += 1
-            self.launch_overall[idx] += 1
+            self.launch_count[idx] += 1
             if i > 0:
                 self.total_launch_steps[i] = self.total_launch_steps[i - 1]
                 self.total_launch_steps[i][idx] = self.total_launch_steps[i - 1][idx] + 1
@@ -57,11 +58,11 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                 self.total_launch_steps[i][idx] = 1
 
         self.total_launch_energy_steps = numpy.zeros(
-            (self.total_launch_success, countries_length), dtype=int)
+            (self.total_launch_success, self.countries_length), dtype=int)
         self.total_launch_s_energy_steps = numpy.zeros(
-            (self.total_launch_success, countries_length), dtype=int)
+            (self.total_launch_success, self.countries_length), dtype=int)
         self.total_launch_mass_steps = numpy.zeros(
-            (self.total_launch_success, countries_length), dtype=int)
+            (self.total_launch_success, self.countries_length), dtype=int)
 
         i = 0
         j = 0
@@ -114,13 +115,9 @@ def plot_launch_times_by_country(launch_statistics,
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
-    fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
-    fprop = fm.FontProperties(fname=constants.FONT_PATH)
-
     x_min = config_dict['time_filter'][0]
     x_value = [x_min] + launch_info_lists.time
     x_max = config_dict['time_filter'][1]
@@ -130,7 +127,7 @@ def plot_launch_times_by_country(launch_statistics,
                              figsize=constants.DEFAULT_FIGSIZE,
                              dpi=constants.DEFAULT_DPI)
 
-    for j in numpy.arange(0, len(launch_statistics.countries)):
+    for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -141,27 +138,16 @@ def plot_launch_times_by_country(launch_statistics,
                      country=launch_statistics.countries[j],
                      number=str(y_value[-1])),
                  linewidth=3)
-    plt.legend(prop=fprop)
+    plt.legend(prop=config_dict['fprop'])
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
-
-    text = """截至UTC时间：{end_time}
-绘制者：@旋火_SwingFire
-绘制脚本：https://github.com/Bourshevik0/plot_launch
-本作品采用 CC BY-NC-SA 4.0 进行许可
-(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
-
-    axes.text(0.2, 0.95, text,
-              fontproperties=fprop, color='grey',
-              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('launch_times_figure_title')
     if title_text:
         plt.title(label=title_text, y=1.01,
-                  fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=18)
-    plt.ylabel('发射次数', fontproperties=fprop, rotation=0, fontsize=18)
+                  fontproperties=config_dict['fprop_title'], fontsize=35)
+    plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.ylabel('发射次数', fontproperties=config_dict['fprop'], rotation=0, fontsize=18)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -169,6 +155,10 @@ def plot_launch_times_by_country(launch_statistics,
              xmax=x_max)
     axes.yaxis.tick_right()
     axes.yaxis.set_label_position('right')
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+    for label in axes.get_yticklabels():
+        label.set_fontproperties(config_dict['fprop'])
 
     y_max = axes.get_ylim()[1] - 3
     i = 5
@@ -195,11 +185,8 @@ def plot_launch_times_by_country(launch_statistics,
         j = j + 1
         j = j % 2
 
-    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
-    cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
-    cc_img_ax.imshow(cc_img)
-    cc_img_ax.axis('off')
-    plt.imshow(cc_img)
+    draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
+                    img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['launch_times_figure_filename'])
 
 
@@ -224,29 +211,15 @@ def mass_update_scale_value(temp, position):
 
 
 def plot_launch_energy_by_country(launch_statistics,
-                                  launch_info_lists,
                                   config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
-    :param launch_info_lists: A LaunchInfoLists object.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
-    fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
-    fprop = fm.FontProperties(fname=constants.FONT_PATH)
 
     x_min = config_dict['time_filter'][0]
-
-    successful_launch_time = []
-    total_length = len(launch_info_lists.time)
-    i = 0
-    while i < total_length:
-        if launch_info_lists.launch_result[i]:
-            successful_launch_time.append(launch_info_lists.time[i])
-        i = i + 1
-
-    x_value = [x_min] + successful_launch_time
+    x_value = [x_min] + launch_statistics.successful_launch_time
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
@@ -254,7 +227,7 @@ def plot_launch_energy_by_country(launch_statistics,
                              figsize=constants.DEFAULT_FIGSIZE,
                              dpi=constants.DEFAULT_DPI)
 
-    for j in numpy.arange(0, len(launch_statistics.countries)):
+    for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -266,27 +239,17 @@ def plot_launch_energy_by_country(launch_statistics,
                      country=launch_statistics.countries[j],
                      number=label_value),
                  linewidth=3)
-    plt.legend(prop=fprop, loc=2)
+    plt.legend(prop=config_dict['fprop'], loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
-
-    text = """截至UTC时间：{end_time}
-绘制者：@旋火_SwingFire
-绘制脚本：https://github.com/Bourshevik0/plot_launch
-本作品采用 CC BY-NC-SA 4.0 进行许可
-(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
-
-    axes.text(0.2, 0.95, text,
-              fontproperties=fprop, color='grey',
-              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('energy_figure_title')
     if title_text:
         plt.title(label=title_text,
-                  y=1.01, fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=18)
-    plt.ylabel('能量\n(太焦耳)\n(TJ)', fontproperties=fprop, rotation=0, fontsize=14)
+                  y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
+
+    plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.ylabel('能量\n(太焦耳)\n(TJ)', fontproperties=config_dict['fprop'], rotation=0, fontsize=14)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -294,6 +257,10 @@ def plot_launch_energy_by_country(launch_statistics,
              xmax=x_max)
     axes.yaxis.tick_right()
     axes.yaxis.set_label_position('right')
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+    for label in axes.get_yticklabels():
+        label.set_fontproperties(config_dict['fprop'])
 
     for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
@@ -301,12 +268,12 @@ def plot_launch_energy_by_country(launch_statistics,
     i = 1
     day_tuple = (1, 16)
     j = 1
-    datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+    datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                    month=i,
                                    day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
-        datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+        datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                        month=i,
                                        day=day_tuple[j])
         plt.axvline(x=datetime_i,
@@ -317,11 +284,8 @@ def plot_launch_energy_by_country(launch_statistics,
         j = j + 1
         j = j % 2
 
-    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
-    cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
-    cc_img_ax.imshow(cc_img)
-    cc_img_ax.axis('off')
-    plt.imshow(cc_img)
+    draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
+                    img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['energy_figure_filename'])
 
 
@@ -331,24 +295,12 @@ def plot_launch_s_energy_by_country(launch_statistics,
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
-    fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
-    fprop = fm.FontProperties(fname=constants.FONT_PATH)
-
     x_min = config_dict['time_filter'][0]
 
-    successful_launch_time = []
-    total_length = len(launch_info_lists.time)
-    i = 0
-    while i < total_length:
-        if launch_info_lists.launch_result[i]:
-            successful_launch_time.append(launch_info_lists.time[i])
-        i = i + 1
-
-    x_value = [x_min] + successful_launch_time
+    x_value = [x_min] + launch_statistics.successful_launch_time
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
@@ -356,7 +308,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
                              figsize=constants.DEFAULT_FIGSIZE,
                              dpi=constants.DEFAULT_DPI)
 
-    for j in numpy.arange(0, len(launch_statistics.countries)):
+    for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_s_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -368,27 +320,17 @@ def plot_launch_s_energy_by_country(launch_statistics,
                      country=launch_statistics.countries[j],
                      number=label_value),
                  linewidth=3)
-    plt.legend(prop=fprop, loc=2)
+    plt.legend(prop=config_dict['fprop'], loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
-
-    text = """截至UTC时间：{end_time}
-绘制者：@旋火_SwingFire
-绘制脚本：https://github.com/Bourshevik0/plot_launch
-本作品采用 CC BY-NC-SA 4.0 进行许可
-(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
-
-    axes.text(0.2, 0.95, text,
-              fontproperties=fprop, color='grey',
-              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('s_energy_figure_title')
     if title_text:
         plt.title(label=title_text,
-                  y=1.01, fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=18)
-    plt.ylabel('比能量\n(吉焦耳/千克)\n(GJ/kg)', fontproperties=fprop, rotation=0, fontsize=12)
+                  y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
+    plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.ylabel('比能量\n(吉焦耳/千克)\n(GJ/kg)', fontproperties=config_dict['fprop'],
+               rotation=0, fontsize=12)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -396,6 +338,10 @@ def plot_launch_s_energy_by_country(launch_statistics,
              xmax=x_max)
     axes.yaxis.tick_right()
     axes.yaxis.set_label_position('right')
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+    for label in axes.get_yticklabels():
+        label.set_fontproperties(config_dict['fprop'])
 
     for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
@@ -403,12 +349,12 @@ def plot_launch_s_energy_by_country(launch_statistics,
     i = 1
     day_tuple = (1, 16)
     j = 1
-    datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+    datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                    month=i,
                                    day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
-        datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+        datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                        month=i,
                                        day=day_tuple[j])
         plt.axvline(x=datetime_i,
@@ -419,11 +365,8 @@ def plot_launch_s_energy_by_country(launch_statistics,
         j = j + 1
         j = j % 2
 
-    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
-    cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
-    cc_img_ax.imshow(cc_img)
-    cc_img_ax.axis('off')
-    plt.imshow(cc_img)
+    draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
+                    img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['s_energy_figure_filename'])
 
 
@@ -433,24 +376,13 @@ def plot_launch_mass_by_country(launch_statistics,
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
-    fprop_title = fm.FontProperties(fname=constants.FONT_PATH)
-    fprop = fm.FontProperties(fname=constants.FONT_PATH)
 
     x_min = config_dict['time_filter'][0]
 
-    successful_launch_time = []
-    total_length = len(launch_info_lists.time)
-    i = 0
-    while i < total_length:
-        if launch_info_lists.launch_result[i]:
-            successful_launch_time.append(launch_info_lists.time[i])
-        i = i + 1
-
-    x_value = [x_min] + successful_launch_time
+    x_value = [x_min] + launch_statistics.successful_launch_time
     x_max = config_dict['time_filter'][1]
     x_value.append(x_max)
 
@@ -458,7 +390,7 @@ def plot_launch_mass_by_country(launch_statistics,
                              figsize=constants.DEFAULT_FIGSIZE,
                              dpi=constants.DEFAULT_DPI)
 
-    for j in numpy.arange(0, len(launch_statistics.countries)):
+    for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_mass_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -470,27 +402,16 @@ def plot_launch_mass_by_country(launch_statistics,
                      country=launch_statistics.countries[j],
                      number=label_value),
                  linewidth=3)
-    plt.legend(prop=fprop, loc=2)
+    plt.legend(prop=config_dict['fprop'], loc=2)
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
-
-    text = """截至UTC时间：{end_time}
-绘制者：@旋火_SwingFire
-绘制脚本：https://github.com/Bourshevik0/plot_launch
-本作品采用 CC BY-NC-SA 4.0 进行许可
-(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
-
-    axes.text(0.2, 0.95, text,
-              fontproperties=fprop, color='grey',
-              transform=axes.transAxes, va='top')
 
     title_text = config_dict.get('mass_figure_title')
     if title_text:
         plt.title(label=title_text,
-                  y=1.01, fontproperties=fprop_title, fontsize=35)
-    plt.xlabel('时间', fontproperties=fprop, fontsize=16)
-    plt.ylabel('质量\n(吨，t)', fontproperties=fprop, rotation=0, fontsize=16)
+                  y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
+    plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=16)
+    plt.ylabel('质量\n(吨，t)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -498,6 +419,10 @@ def plot_launch_mass_by_country(launch_statistics,
              xmax=x_max)
     axes.yaxis.tick_right()
     axes.yaxis.set_label_position('right')
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+    for label in axes.get_yticklabels():
+        label.set_fontproperties(config_dict['fprop'])
 
     for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
         plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
@@ -505,12 +430,12 @@ def plot_launch_mass_by_country(launch_statistics,
     i = 1
     day_tuple = (1, 16)
     j = 1
-    datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+    datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                    month=i,
                                    day=day_tuple[j])
 
     while datetime_i < x_max and i < 13:
-        datetime_i = datetime.datetime(year=successful_launch_time[0].year,
+        datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
                                        month=i,
                                        day=day_tuple[j])
         plt.axvline(x=datetime_i,
@@ -520,10 +445,132 @@ def plot_launch_mass_by_country(launch_statistics,
         i = i + j % 2
         j = j + 1
         j = j % 2
+    draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
+                    img_x=0.28, img_y=0.60, config_dict=config_dict)
+    plt.savefig(config_dict['mass_figure_filename'])
 
+
+def draw_cc_license(
+        fig,
+        axes,
+        text_x,
+        text_y,
+        img_x,
+        img_y,
+        config_dict):
+    """
+    Draw CC license related things on the plot.
+    :param fig: A matplot figure object.
+    :param axes: A matplot axes object.
+    :param text_x: The text position x from data coordinates transformed by ax.transAxes.
+    :param text_y: The text position y from data coordinates transformed by ax.transAxes.
+    :param img_x: The img position x from data coordinates transformed by ax.transAxes.
+    :param img_y: The img position y from data coordinates transformed by ax.transAxes.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return None:
+    """
+    text = """截至UTC时间：{end_time}
+绘制者：@旋火_SwingFire
+绘制脚本：https://github.com/Bourshevik0/plot_launch
+本作品采用 CC BY-NC-SA 4.0 进行许可
+(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
+""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
+    axes.text(text_x, text_y, text,
+              fontproperties=config_dict['fprop'], color='grey',
+              transform=axes.transAxes, va='top')
     cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
-    cc_img_ax = fig.add_axes([0.28, 0.60, 0.1, 0.1], anchor='NE')
+    cc_img_ax = fig.add_axes([img_x, img_y, 0.1, 0.1], anchor='NE', transform=axes.transAxes)
     cc_img_ax.imshow(cc_img)
     cc_img_ax.axis('off')
     plt.imshow(cc_img)
-    plt.savefig(config_dict['mass_figure_filename'])
+
+
+def draw_labels_on_bars(axes,
+                        config_dict):
+    """
+    Draw the labels on the bars.
+    :param axes: A matplot axes object.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return axes: A matplot axes object.
+    """
+    y_x_dict = dict()
+    for rect in axes.patches:
+        x_value = rect.get_width()
+        label_value = x_value
+
+        if x_value <= 0:
+            continue
+
+        if x_value > 1:
+            x_offset = - len(str(label_value)) * 20 - 10
+        else:
+            x_offset = - len(str(label_value)) * 20 - 4
+        y_value = rect.get_y() + rect.get_height() / 2
+
+        if y_value not in y_x_dict:
+            y_x_dict[y_value] = x_value
+        else:
+            x_value = y_x_dict[y_value] + x_value
+        label = "{:.0f}".format(label_value)
+        axes.annotate(
+            label,
+            (x_value, y_value),
+            xytext=(x_offset, - 10),
+            textcoords='offset pixels',
+            color='#FFFFFF',
+            rotation=0,
+            fontsize=20,
+            fontproperties=config_dict['fprop'])
+
+
+def plot_launch_bar_by_country(launch_statistics,
+                               config_dict):
+    """
+    :param launch_statistics: A LaunchStatistics object.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return None:
+    """
+    indices = numpy.argsort(launch_statistics.launch_count)
+    y_axis_labels = []
+    for country in launch_statistics.countries[indices]:
+        y_axis_labels.append(country)
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
+    axes.yaxis.set_ticks(numpy.arange(0, launch_statistics.countries_length), rotation=0)
+    axes.yaxis.set_ticklabels(y_axis_labels, fontproperties=config_dict['fprop'],
+                              rotation=0, fontsize=20)
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+
+    plt.barh(launch_statistics.countries, launch_statistics.launch_success[indices],
+             color=constants.STATUS_COLOR_DICT['成功'], label='成功')
+    plt.barh(launch_statistics.countries, launch_statistics.launch_failure[indices],
+             left=launch_statistics.launch_success[indices],
+             color=constants.STATUS_COLOR_DICT['失败'], label='失败')
+
+    draw_labels_on_bars(axes=axes, config_dict=config_dict)
+
+    axes.xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+    for i in axes.xaxis.get_major_locator().tick_values(0, axes.get_xlim()[1]):
+        plt.axvline(x=i,
+                    color=constants.DEFAULT_AXLINE_COLOR,
+                    linestyle='solid',
+                    linewidth=1)
+
+    title_text = config_dict.get('launch_times_bar_title')
+    if title_text:
+        plt.title(label=title_text,
+                  y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
+
+    plt.xlabel('发射次数', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.ylabel('发射提供方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(0, 1.0)
+    plt.legend(prop=config_dict['fprop'], loc=1)
+
+    draw_cc_license(axes=axes, fig=fig, text_x=0.5, text_y=0.3,
+                    img_x=0.515, img_y=0.1, config_dict=config_dict)
+
+    plt.savefig(config_dict['launch_times_bar_filename'])
+

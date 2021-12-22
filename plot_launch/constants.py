@@ -25,6 +25,12 @@ HEX_COLOR_DICT = {
     '日本': '#808080'  # grey
 }
 
+STATUS_COLOR_DICT = {
+    # reference https://cran.r-project.org/web/packages/khroma/vignettes/tol.html#vibrant
+    '成功': '#0077BB',
+    '失败': '#CC3311'
+}
+
 RAW_CODE_DICT = {
     # reference https://en.wikipedia.org/wiki/ISO_3166-1
     '中国': 'CN',

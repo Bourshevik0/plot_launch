@@ -10,6 +10,8 @@ import re
 import os
 
 # Import third-party modules
+import matplotlib
+import matplotlib.font_manager as fm
 
 
 # Any changes to the path and your own modules
@@ -88,7 +90,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         Initialize a LaunchInfoLists object from raw_data.
         :param raw_data: A raw format of data of launches which separated by '\n\n' which is a
         string.
-        :param config_dict: A dictionary to filter out unwanted data files.
+        :param config_dict: A dictionary to control the plotting procedure.
         :return launch_info_lists: An initialized LaunchInfoLists object.
         """
         launch_info_lists = cls()
@@ -270,7 +272,7 @@ def get_launch_info_from_files(data_dir,
                                config_dict=None):
     """
     Defines codes to get launchinfo from multiple raw data files.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :param data_dir: A directory path contains several raw data files to read.
     :return LaunchInfoLists: An initialized LaunchInfoLists object.
     """
@@ -318,15 +320,56 @@ def from_str_to_datetime(datetime_str,
 def prcs_config_dict(config_dict):
     """
     Process config dictionary.
-    :param config_dict: A dictionary to filter out unwanted data files.
+    :param config_dict: A dictionary to control the plotting procedure.
     :return config_dict: Same dictionary as the input but processed.
     """
-    config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
-                                                       config_dict['time_filter_format']),
-                                  from_str_to_datetime(config_dict['time_filter'][1],
-                                                       config_dict['time_filter_format'])]
-    if config_dict['time_filter'][1] > constants.CURRENT_TIME:
-        config_dict['time_filter'][1] = constants.CURRENT_TIME
+    matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
+
+    if config_dict:
+        config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
+                                                           config_dict['time_filter_format']),
+                                      from_str_to_datetime(config_dict['time_filter'][1],
+                                                           config_dict['time_filter_format'])]
+        if config_dict['time_filter'][1] > constants.CURRENT_TIME:
+            config_dict['time_filter'][1] = constants.CURRENT_TIME
+    else:
+        config_dict = {
+            'time_filter': [
+                datetime.datetime(year=constants.CURRENT_TIME.year,
+                                  month=1,
+                                  day=1),
+                constants.CURRENT_TIME],
+            'filename_filter': str(constants.CURRENT_TIME.year),
+            'launch_times_figure_title': '{year}年世界航天入轨发射次数统计(阶跃图)'.format(
+                year=constants.CURRENT_TIME.year),
+            'launch_times_figure_filename':
+                os.path.join(constants.HERE, '{year}_launch_time_by_countries_step.png'.format(
+                    year=constants.CURRENT_TIME.year)),
+            'energy_figure_title': '{year}年世界航天入轨发射轨道能量统计(阶跃图)'.format(
+                year=constants.CURRENT_TIME.year),
+            'energy_figure_filename':
+                os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
+                    year=constants.CURRENT_TIME.year)),
+            's_energy_figure_title': '{year}年世界航天入轨发射轨道比能量统计(阶跃图)'.format(
+                year=constants.CURRENT_TIME.year),
+            's_energy_figure_filename':
+                os.path.join(constants.HERE,
+                             '{year}_launch_s_energy_by_countries_step.png'.format(
+                                 year=constants.CURRENT_TIME.year)),
+            'mass_figure_title': '{year}年世界航天入轨发射质量统计(阶跃图)'.format(
+                year=constants.CURRENT_TIME.year),
+            'mass_figure_filename':
+                os.path.join(constants.HERE,
+                             '{year}_mass_by_countries_step.png'.format(
+                                 year=constants.CURRENT_TIME.year)),
+            'launch_times_bar_title': '{year}年世界航天入轨发射次数统计(柱状图)'.format(
+                year=constants.CURRENT_TIME.year),
+            'launch_times_bar_filename':
+                os.path.join(constants.HERE, '{year}_launch_time_by_countries_bar.png'.format(
+                    year=constants.CURRENT_TIME.year)),
+        }
+    config_dict['fprop_title'] = fm.FontProperties(fname=constants.FONT_PATH)
+    config_dict['fprop'] = fm.FontProperties(fname=constants.FONT_PATH)
     return config_dict
 
 
