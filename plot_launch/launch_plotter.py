@@ -32,25 +32,25 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         self.countries = numpy.unique(launch_info_lists.launcher_man_country)
         countries_dict = {value: key for key, value in enumerate(self.countries)}
         self.countries_length = len(self.countries)
-        total_launch_times = len(launch_info_lists.time)
+        launch_count = len(launch_info_lists.time)
         self.total_launch_steps = numpy.zeros(
             (len(launch_info_lists.time), self.countries_length), dtype=int)
         self.successful_launch_time = []
-        self.launch_success = numpy.zeros(self.countries_length, dtype=int)
-        self.total_launch_success = 0
-        self.launch_failure = numpy.zeros(self.countries_length, dtype=int)
-        self.total_launch_failure = 0
-        self.launch_count = numpy.zeros(self.countries_length, dtype=int)
-        for i in numpy.arange(0, total_launch_times):
+        self.scs_array = numpy.zeros(self.countries_length, dtype=int)
+        self.scs_count = 0
+        self.failure_array = numpy.zeros(self.countries_length, dtype=int)
+        self.failure_count = 0
+        self.launch_array = numpy.zeros(self.countries_length, dtype=int)
+        for i in numpy.arange(0, launch_count):
             idx = countries_dict[launch_info_lists.launcher_man_country[i]]
             if launch_info_lists.launch_result[i]:
                 self.successful_launch_time.append(launch_info_lists.time[i])
-                self.launch_success[idx] += 1
-                self.total_launch_success += 1
+                self.scs_array[idx] += 1
+                self.scs_count += 1
             else:
-                self.launch_failure[idx] += 1
-                self.total_launch_failure += 1
-            self.launch_count[idx] += 1
+                self.failure_array[idx] += 1
+                self.failure_count += 1
+            self.launch_array[idx] += 1
             if i > 0:
                 self.total_launch_steps[i] = self.total_launch_steps[i - 1]
                 self.total_launch_steps[i][idx] = self.total_launch_steps[i - 1][idx] + 1
@@ -58,15 +58,15 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                 self.total_launch_steps[i][idx] = 1
 
         self.total_launch_energy_steps = numpy.zeros(
-            (self.total_launch_success, self.countries_length), dtype=int)
+            (self.scs_count, self.countries_length), dtype=int)
         self.total_launch_s_energy_steps = numpy.zeros(
-            (self.total_launch_success, self.countries_length), dtype=int)
+            (self.scs_count, self.countries_length), dtype=int)
         self.total_launch_mass_steps = numpy.zeros(
-            (self.total_launch_success, self.countries_length), dtype=int)
+            (self.scs_count, self.countries_length), dtype=int)
 
         i = 0
         j = 0
-        while i < total_launch_times:
+        while i < launch_count:
             idx = countries_dict[launch_info_lists.launcher_man_country[i]]
             if launch_info_lists.launch_result[i]:
                 k = i - j
@@ -142,12 +142,14 @@ def plot_launch_times_by_country(launch_statistics,
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
 
-    title_text = config_dict.get('launch_times_figure_title')
+    title_text = config_dict.get('step_title')
     if title_text:
         plt.title(label=title_text, y=1.01,
                   fontproperties=config_dict['fprop_title'], fontsize=35)
     plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
-    plt.ylabel('发射次数', fontproperties=config_dict['fprop'], rotation=0, fontsize=18)
+    plt.ylabel('发射次数(总数：{count})'.format(
+        count=launch_statistics.scs_count + launch_statistics.failure_count),
+               fontproperties=config_dict['fprop'], rotation=0, fontsize=18)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -187,7 +189,7 @@ def plot_launch_times_by_country(launch_statistics,
 
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
-    plt.savefig(config_dict['launch_times_figure_filename'])
+    plt.savefig(config_dict['step_filename'])
 
 
 def energy_update_scale_value(temp, position):
@@ -243,7 +245,7 @@ def plot_launch_energy_by_country(launch_statistics,
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
-    title_text = config_dict.get('energy_figure_title')
+    title_text = config_dict.get('energy_step_title')
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
@@ -286,15 +288,13 @@ def plot_launch_energy_by_country(launch_statistics,
 
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
-    plt.savefig(config_dict['energy_figure_filename'])
+    plt.savefig(config_dict['energy_step_filename'])
 
 
 def plot_launch_s_energy_by_country(launch_statistics,
-                                    launch_info_lists,
                                     config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
-    :param launch_info_lists: A LaunchInfoLists object.
     :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
@@ -324,7 +324,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
-    title_text = config_dict.get('s_energy_figure_title')
+    title_text = config_dict.get('s_energy_step_title')
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
@@ -367,15 +367,13 @@ def plot_launch_s_energy_by_country(launch_statistics,
 
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
-    plt.savefig(config_dict['s_energy_figure_filename'])
+    plt.savefig(config_dict['s_energy_step_filename'])
 
 
 def plot_launch_mass_by_country(launch_statistics,
-                                launch_info_lists,
                                 config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
-    :param launch_info_lists: A LaunchInfoLists object.
     :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
@@ -406,7 +404,7 @@ def plot_launch_mass_by_country(launch_statistics,
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
-    title_text = config_dict.get('mass_figure_title')
+    title_text = config_dict.get('mass_step_title')
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
@@ -447,7 +445,7 @@ def plot_launch_mass_by_country(launch_statistics,
         j = j % 2
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
-    plt.savefig(config_dict['mass_figure_filename'])
+    plt.savefig(config_dict['mass_step_filename'])
 
 
 def draw_cc_license(
@@ -530,7 +528,7 @@ def plot_launch_bar_by_country(launch_statistics,
     :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    indices = numpy.argsort(launch_statistics.launch_count)
+    indices = numpy.argsort(launch_statistics.launch_array)
     y_axis_labels = []
     for country in launch_statistics.countries[indices]:
         y_axis_labels.append(country)
@@ -543,14 +541,13 @@ def plot_launch_bar_by_country(launch_statistics,
     for label in axes.get_xticklabels():
         label.set_fontproperties(config_dict['fprop'])
 
-    plt.barh(launch_statistics.countries, launch_statistics.launch_success[indices],
+    plt.barh(launch_statistics.countries, launch_statistics.scs_array[indices],
              color=constants.STATUS_COLOR_DICT['成功'], label='成功')
-    plt.barh(launch_statistics.countries, launch_statistics.launch_failure[indices],
-             left=launch_statistics.launch_success[indices],
+    plt.barh(launch_statistics.countries, launch_statistics.failure_array[indices],
+             left=launch_statistics.scs_array[indices],
              color=constants.STATUS_COLOR_DICT['失败'], label='失败')
 
     draw_labels_on_bars(axes=axes, config_dict=config_dict)
-
     axes.xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
     for i in axes.xaxis.get_major_locator().tick_values(0, axes.get_xlim()[1]):
         plt.axvline(x=i,
@@ -558,12 +555,15 @@ def plot_launch_bar_by_country(launch_statistics,
                     linestyle='solid',
                     linewidth=1)
 
-    title_text = config_dict.get('launch_times_bar_title')
+    title_text = config_dict.get('bar_title')
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
 
-    plt.xlabel('发射次数', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.xlabel('发射次数(总数：{total}，失败：{failure})'.format(
+        total=launch_statistics.scs_count + launch_statistics.failure_count,
+        failure=launch_statistics.failure_count),
+               fontproperties=config_dict['fprop'], fontsize=18)
     plt.ylabel('发射提供方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(0, 1.0)
@@ -572,5 +572,5 @@ def plot_launch_bar_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.5, text_y=0.3,
                     img_x=0.515, img_y=0.1, config_dict=config_dict)
 
-    plt.savefig(config_dict['launch_times_bar_filename'])
+    plt.savefig(config_dict['bar_filename'])
 

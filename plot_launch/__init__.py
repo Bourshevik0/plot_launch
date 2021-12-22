@@ -4,10 +4,8 @@
 Defines plot_launch's commandline entry point functionality.
 """
 # Import built-in modules
-import os
 import sys
 import json
-import datetime
 
 # Import third-party modules
 
@@ -31,23 +29,33 @@ def main():
                                                                config_dict=config_dict)
     launch_statistics = launch_plotter.LaunchStatistics(launch_info_lists)
 
-    if 'launch_times_figure_filename' in config_dict:
+    if 'step_filename' in config_dict:
         launch_plotter.plot_launch_times_by_country(launch_statistics=launch_statistics,
                                                     launch_info_lists=launch_info_lists,
                                                     config_dict=config_dict)
-    if 'energy_figure_filename' in config_dict:
+    if 'energy_step_filename' in config_dict:
         launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
                                                      config_dict=config_dict)
-    if 's_energy_figure_filename' in config_dict:
+    if 's_energy_step_filename' in config_dict:
         launch_plotter.plot_launch_s_energy_by_country(launch_statistics=launch_statistics,
-                                                       launch_info_lists=launch_info_lists,
                                                        config_dict=config_dict)
 
-    if 'mass_figure_filename' in config_dict:
+    if 'mass_step_filename' in config_dict:
         launch_plotter.plot_launch_mass_by_country(launch_statistics=launch_statistics,
-                                                   launch_info_lists=launch_info_lists,
                                                    config_dict=config_dict)
 
-    if 'launch_times_bar_filename' in config_dict:
+    if 'bar_filename' in config_dict:
         launch_plotter.plot_launch_bar_by_country(launch_statistics=launch_statistics,
+                                                  config_dict=config_dict)
+
+    if 'cur_month_bar' in config_dict:
+        new_lists = launch_info.LaunchInfoLists()
+        i, j = launch_info_lists.get_slice_from_datetime(
+            datetime_start=config_dict['cur_month_start'],
+            datetime_end=config_dict['cur_month_end'])
+        launch_info_lists.slice_info(new_lists, i, j)
+        new_statistics = launch_plotter.LaunchStatistics(new_lists)
+        config_dict['bar_filename'] = config_dict['cur_month_bar']
+        config_dict['bar_title'] = config_dict['month_title']
+        launch_plotter.plot_launch_bar_by_country(launch_statistics=new_statistics,
                                                   config_dict=config_dict)

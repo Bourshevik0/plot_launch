@@ -79,8 +79,59 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship = []
 
         # data sources
-        self.citation_seq_tuple_list = []
-        self.sources = []
+        # self.citation_seq_tuple_list = []
+        # self.sources = []
+
+    def get_slice_from_datetime(self,
+                                datetime_start,
+                                datetime_end):
+        """
+        Return a slice based on a datetime range.
+        :param datetime_start: A datetime start.
+        :param datetime_end: A datetime end.
+        :return i, j: 'i' is the start of the slice. 'j' is the end of the slice.
+        """
+        i = 0
+        j = len(self.time)
+        k = 0
+        length = j
+        while k < length:
+            if i == 0 and datetime_start < self.time[k]:
+                i = k
+            if j == length and datetime_end < self.time[k]:
+                j = k
+                break
+            k = k + 1
+        return i, j
+
+    def slice_info(self,
+                   new_info_lists,
+                   i,
+                   j):
+        """
+        Slice self into a new_info_lists.
+        :return None:
+        """
+        new_info_lists.identifier = self.identifier[i:j]
+        new_info_lists.launcher_man_country = self.launcher_man_country[i:j]
+        new_info_lists.time = self.time[i:j]
+        new_info_lists.location = self.location[i:j]
+        new_info_lists.mission_name = self.mission_name[i:j]
+        new_info_lists.flight_num = self.flight_num[i:j]
+        new_info_lists.launch_provider = self.launch_provider[i:j]
+        new_info_lists.payload_provider = self.payload_provider[i:j]
+        new_info_lists.payload_operator = self.payload_operator[i:j]
+        new_info_lists.payload_developer = self.payload_developer[i:j]
+        new_info_lists.payload_info = self.payload_info[i:j]
+        new_info_lists.payload_mass = self.payload_mass[i:j]
+        new_info_lists.launcher = self.launcher[i:j]
+        new_info_lists.orbit = self.orbit[i:j]
+        new_info_lists.s_orbital_energy = self.s_orbital_energy[i:j]
+        new_info_lists.orbital_energy = self.orbital_energy[i:j]
+        new_info_lists.launch_result = self.launch_result[i:j]
+        new_info_lists.remarks = self.remarks[i:j]
+        new_info_lists.recovery_result = self.recovery_result[i:j]
+        new_info_lists.recovery_ship = self.recovery_ship[i:j]
 
     @classmethod
     def from_raw_data(cls,
@@ -340,34 +391,47 @@ def prcs_config_dict(config_dict):
                                   day=1),
                 constants.CURRENT_TIME],
             'filename_filter': str(constants.CURRENT_TIME.year),
-            'launch_times_figure_title': '{year}年世界航天入轨发射次数统计(阶跃图)'.format(
+            'step_title': '{year}年世界航天入轨发射次数统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
-            'launch_times_figure_filename':
+            'step_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            'energy_figure_title': '{year}年世界航天入轨发射轨道能量统计(阶跃图)'.format(
+            'energy_step_title': '{year}年世界航天入轨发射轨道能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
-            'energy_figure_filename':
+            'energy_step_filename':
                 os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            's_energy_figure_title': '{year}年世界航天入轨发射轨道比能量统计(阶跃图)'.format(
+            's_energy_step_title': '{year}年世界航天入轨发射轨道比能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
-            's_energy_figure_filename':
+            's_energy_step_filename':
                 os.path.join(constants.HERE,
                              '{year}_launch_s_energy_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
-            'mass_figure_title': '{year}年世界航天入轨发射质量统计(阶跃图)'.format(
+            'mass_step_title': '{year}年世界航天入轨发射质量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
-            'mass_figure_filename':
+            'mass_step_filename':
                 os.path.join(constants.HERE,
                              '{year}_mass_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
-            'launch_times_bar_title': '{year}年世界航天入轨发射次数统计(柱状图)'.format(
+            'bar_title': '{year}年世界航天入轨发射次数统计(柱状图)'.format(
                 year=constants.CURRENT_TIME.year),
-            'launch_times_bar_filename':
+            'bar_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_bar.png'.format(
                     year=constants.CURRENT_TIME.year)),
+            'cur_month_bar':
+                os.path.join(constants.HERE,
+                             '{year}{month}_launch_time_by_countries_bar_month.png'.format(
+                                 year=constants.CURRENT_TIME.year,
+                                 month=constants.CURRENT_TIME.month)),
+            'month_title': '{year}年{month}月世界航天入轨发射次数统计(柱状图)'.format(
+                year=constants.CURRENT_TIME.year,
+                month=constants.CURRENT_TIME.month),
         }
+    if 'cur_month_bar' in config_dict:
+        config_dict['cur_month_start'] = datetime.datetime(year=constants.CURRENT_TIME.year,
+                                                           month=constants.CURRENT_TIME.month,
+                                                           day=1)
+        config_dict['cur_month_end'] = constants.CURRENT_TIME
     config_dict['fprop_title'] = fm.FontProperties(fname=constants.FONT_PATH)
     config_dict['fprop'] = fm.FontProperties(fname=constants.FONT_PATH)
     return config_dict
