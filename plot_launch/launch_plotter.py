@@ -109,6 +109,41 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
             i = i + 1
 
 
+def draw_cc_license(
+        fig,
+        axes,
+        text_x,
+        text_y,
+        img_x,
+        img_y,
+        config_dict):
+    """
+    Draw CC license related things on the plot.
+    :param fig: A matplot figure object.
+    :param axes: A matplot axes object.
+    :param text_x: The text position x from data coordinates transformed by ax.transAxes.
+    :param text_y: The text position y from data coordinates transformed by ax.transAxes.
+    :param img_x: The img position x from data coordinates transformed by ax.transAxes.
+    :param img_y: The img position y from data coordinates transformed by ax.transAxes.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return None:
+    """
+    text = """截至UTC时间：{end_time}
+绘制者：@旋火_SwingFire
+绘制脚本：https://github.com/Bourshevik0/plot_launch
+本作品采用 CC BY-NC-SA 4.0 进行许可
+(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
+""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
+    axes.text(text_x, text_y, text,
+              fontproperties=config_dict['fprop'], color='grey',
+              transform=axes.transAxes, va='top')
+    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
+    cc_img_ax = fig.add_axes([img_x, img_y, 0.1, 0.1], anchor='NE', transform=axes.transAxes)
+    cc_img_ax.imshow(cc_img)
+    cc_img_ax.axis('off')
+    plt.imshow(cc_img)
+
+
 def plot_launch_times_by_country(launch_statistics,
                                  launch_info_lists,
                                  config_dict):
@@ -138,7 +173,9 @@ def plot_launch_times_by_country(launch_statistics,
                      country=launch_statistics.countries[j],
                      number=str(y_value[-1])),
                  linewidth=3)
-    plt.legend(prop=config_dict['fprop'])
+    plt.legend(prop=config_dict['fprop'], loc=2)
+    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(次数)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top')
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
 
@@ -242,6 +279,8 @@ def plot_launch_energy_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
+    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(能量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -321,6 +360,8 @@ def plot_launch_s_energy_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
+    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(比能量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -401,6 +442,8 @@ def plot_launch_mass_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
+    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(质量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -446,41 +489,6 @@ def plot_launch_mass_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['mass_step_filename'])
-
-
-def draw_cc_license(
-        fig,
-        axes,
-        text_x,
-        text_y,
-        img_x,
-        img_y,
-        config_dict):
-    """
-    Draw CC license related things on the plot.
-    :param fig: A matplot figure object.
-    :param axes: A matplot axes object.
-    :param text_x: The text position x from data coordinates transformed by ax.transAxes.
-    :param text_y: The text position y from data coordinates transformed by ax.transAxes.
-    :param img_x: The img position x from data coordinates transformed by ax.transAxes.
-    :param img_y: The img position y from data coordinates transformed by ax.transAxes.
-    :param config_dict: A dictionary to control the plotting procedure.
-    :return None:
-    """
-    text = """截至UTC时间：{end_time}
-绘制者：@旋火_SwingFire
-绘制脚本：https://github.com/Bourshevik0/plot_launch
-本作品采用 CC BY-NC-SA 4.0 进行许可
-(https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)
-""".format(end_time=config_dict['time_filter'][1].strftime('%Y/%m/%d %H:%M:%S'))
-    axes.text(text_x, text_y, text,
-              fontproperties=config_dict['fprop'], color='grey',
-              transform=axes.transAxes, va='top')
-    cc_img = mpimg.imread(constants.LICENSE_IMG_PATH)
-    cc_img_ax = fig.add_axes([img_x, img_y, 0.1, 0.1], anchor='NE', transform=axes.transAxes)
-    cc_img_ax.imshow(cc_img)
-    cc_img_ax.axis('off')
-    plt.imshow(cc_img)
 
 
 def draw_labels_on_bars(axes,
@@ -564,7 +572,7 @@ def plot_launch_bar_by_country(launch_statistics,
         total=launch_statistics.scs_count + launch_statistics.failure_count,
         failure=launch_statistics.failure_count),
                fontproperties=config_dict['fprop'], fontsize=18)
-    plt.ylabel('发射提供方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
+    plt.ylabel('火箭制造方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(0, 1.0)
     plt.legend(prop=config_dict['fprop'], loc=1)
