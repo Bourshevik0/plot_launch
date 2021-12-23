@@ -152,6 +152,8 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             i = item.find('\n')
             j = item[:i].find('：')
             data_dict = {item[:j]: item[j + 1:i]}
+            key_list = [item[:j]]
+            value_list = [item[j + 1:i]]
             last_key = item[:j]
             the_rest = item
             not_last = True
@@ -169,9 +171,15 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 if j > 0:
                     data_dict[the_rest[:j]] = text
                     last_key = the_rest[:j]
+                    key_list.append(the_rest[:j])
+                    value_list.append(text)
                 else:
                     data_dict[last_key] = data_dict[last_key] + text
-
+                    value_list[-1] = data_dict[last_key]
+            result = config_dict.get('to_subs')
+            if result:
+                launch_info_to_subs(key_list=key_list, value_list=value_list,
+                                    output_path=result)
             time_str = data_dict.get('时间')
             time_str_part = time_str[:time_str.find('(')]
             time_obj = from_str_to_datetime(time_str_part)
@@ -272,6 +280,30 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship.append(data_dict.get('回收船'))
 
 
+def launch_info_to_subs(key_list,
+                        value_list,
+                        output_path):
+    """
+    Write launch_info strings to subtitles files.
+    :param key_list: An ordered key list of the data_dict.
+    :param value_list: An ordered value list of the data_dict.
+    :return:
+    """
+    line_list = []
+    for i in range(0, len(key_list)):
+        line_list.append(rf'{key_list[i]}\h\h\h{{\fn更纱黑体 SC Semibold\fs45}}{value_list[i]}')
+    sub_text = r'\N{\fs25}\N{\r}'.join(line_list)
+    ssafile = pysubs2.SSAFile.load(path=constants.DEFAULT_STYLES_PATH)
+    ssafile.events = [pysubs2.SSAEvent(
+        start=0,
+        end=5000,
+        text=sub_text,
+        style=list(ssafile.styles.keys())[0]
+    )]
+    sub_filename = os.path.join(output_path, value_list[0] + '.ass')
+    ssafile.save(path=sub_filename)
+
+
 def get_specific_orbital_energy(orbit_str):
     """
     Get potential extra specific orbital energy from payload orbit of the orbit_str.
@@ -344,25 +376,6 @@ def get_launch_info_from_files(data_dir,
                     break
                 index = index + 1
             dir_data.extend(raw_list[:index])
-
-            result = config_dict.get('to_subs')
-            if result:
-                for item in raw_list[:index]:
-                    sub_text = item.replace('：', r'\h\h\h{\fn更纱黑体 SC Semibold\fs45}')
-                    sub_text = sub_text.replace('\n', r'\N{\fs25}\N{\r}')
-                    ssafile = pysubs2.SSAFile.load(path=constants.DEFAULT_STYLES_PATH)
-                    ssafile.events = [pysubs2.SSAEvent(
-                        start=0,
-                        end=5000,
-                        text=sub_text,
-                        style=list(ssafile.styles.keys())[0]
-                    )]
-
-                    i = item.find('\n')
-                    j = item[:i].find('：')
-                    sub_filename = os.path.join(constants.DATA_PATH, item[j + 1:i] + '.ass')
-                    ssafile.save(path=sub_filename)
-
     raw_data = '\n\n'.join(dir_data)
     return LaunchInfoLists.from_raw_data(raw_data=raw_data, config_dict=config_dict)
 
