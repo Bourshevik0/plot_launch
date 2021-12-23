@@ -23,6 +23,9 @@ def main():
     if len(sys.argv) > 1:
         with open(sys.argv[1], encoding='utf-8') as config_file:
             config_dict = json.load(config_file)
+    else:
+        config_dict = None
+
     config_dict = launch_info.prcs_config_dict(config_dict)
 
     launch_info_lists = launch_info.get_launch_info_from_files(constants.DATA_PATH,
