@@ -8,12 +8,12 @@ Defines launch_info classes and methods used by plot_launch.
 import datetime
 import re
 import os
+from calendar import monthrange
 
 # Import third-party modules
 import matplotlib
 import matplotlib.font_manager as fm
 import pysubs2
-
 
 # Any changes to the path and your own modules
 from plot_launch import constants
@@ -287,6 +287,7 @@ def launch_info_to_subs(key_list,
     Write launch_info strings to subtitles files.
     :param key_list: An ordered key list of the data_dict.
     :param value_list: An ordered value list of the data_dict.
+    :param output_path: A path for subtitles files to output.
     :return:
     """
     line_list = []
@@ -328,7 +329,7 @@ def get_specific_orbital_energy(orbit_str):
             orbit = orbit.replace('km', '')
             apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit)))
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 * 1E3 \
-                + constants.NOMINAL_EARTH_RADIUS
+                              + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         result_list.append((specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY))
 
@@ -414,8 +415,6 @@ def prcs_config_dict(config_dict):
                                                            config_dict['time_filter_format']),
                                       from_str_to_datetime(config_dict['time_filter'][1],
                                                            config_dict['time_filter_format'])]
-        if config_dict['time_filter'][1] > constants.CURRENT_TIME:
-            config_dict['time_filter'][1] = constants.CURRENT_TIME
     else:
         config_dict = {
             'time_filter': [
@@ -451,7 +450,7 @@ def prcs_config_dict(config_dict):
             'bar_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_bar.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            'cur_month_bar':
+            'latest_month_bar':
                 os.path.join(constants.HERE,
                              '{year}{month}_launch_time_by_countries_bar_month.png'.format(
                                  year=constants.CURRENT_TIME.year,
@@ -460,15 +459,26 @@ def prcs_config_dict(config_dict):
                 year=constants.CURRENT_TIME.year,
                 month=constants.CURRENT_TIME.month),
         }
-    if 'cur_month_bar' in config_dict:
-        config_dict['cur_month_start'] = datetime.datetime(year=constants.CURRENT_TIME.year,
-                                                           month=constants.CURRENT_TIME.month,
-                                                           day=1)
-        config_dict['cur_month_end'] = constants.CURRENT_TIME
+    if config_dict['time_filter'][1] > constants.CURRENT_TIME:
+        config_dict['time_filter'][1] = constants.CURRENT_TIME
+
+    if 'latest_month_bar' in config_dict:
+        start = datetime.datetime(
+            year=config_dict['time_filter'][1].year,
+            month=config_dict['time_filter'][1].month,
+            day=1)
+        config_dict['latest_month_end'] = config_dict['time_filter'][1]
+        if start == config_dict['latest_month_end']:
+            config_dict['latest_month_start'] = \
+                config_dict['latest_month_end'] - datetime.timedelta(
+                    days=monthrange(config_dict['latest_month_end'].year,
+                                    config_dict['latest_month_end'].month)[1])
+        else:
+            config_dict['latest_month_start'] = start
+
     config_dict['fprop_title'] = fm.FontProperties(fname=constants.FONT_PATH)
     config_dict['fprop'] = fm.FontProperties(fname=constants.FONT_PATH)
     return config_dict
-
 
 # if __name__ == '__main__':
 #     here = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

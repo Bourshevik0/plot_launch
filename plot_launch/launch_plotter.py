@@ -184,9 +184,9 @@ def plot_launch_times_by_country(launch_statistics,
         plt.title(label=title_text, y=1.01,
                   fontproperties=config_dict['fprop_title'], fontsize=35)
     plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
-    plt.ylabel('发射次数(总数：{count})'.format(
+    plt.ylabel('发射次数\n总数：{count}'.format(
         count=launch_statistics.scs_count + launch_statistics.failure_count),
-               fontproperties=config_dict['fprop'], rotation=0, fontsize=18)
+        fontproperties=config_dict['fprop'], rotation=0, fontsize=14)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(1.075, 0.5)
     plt.ylim(ymin=0)
@@ -227,6 +227,15 @@ def plot_launch_times_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['step_filename'])
+
+
+def count_update_scale_value(temp, position):
+    """
+    :param temp:
+    :param position:
+    :return:
+    """
+    return '{result}'.format(result=int(temp))
 
 
 def energy_update_scale_value(temp, position):
@@ -555,14 +564,30 @@ def plot_launch_bar_by_country(launch_statistics,
              left=launch_statistics.scs_array[indices],
              color=constants.STATUS_COLOR_DICT['失败'], label='失败')
 
-    draw_labels_on_bars(axes=axes, config_dict=config_dict)
-    axes.xaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
-    for i in axes.xaxis.get_major_locator().tick_values(0, axes.get_xlim()[1]):
+    major_ticks = axes.xaxis.get_major_locator().tick_values(0, axes.get_xlim()[1])
+
+    x_max = axes.get_xlim()[1]
+    if x_max == launch_statistics.scs_array[indices][-1] \
+            + launch_statistics.failure_array[indices][-1]:
+        if major_ticks[1] < 1:
+            delta = 1.0
+        else:
+            delta = major_ticks[1]
+        x_max = float(launch_statistics.scs_array[indices][-1]) \
+            + float(launch_statistics.failure_array[indices][-1]) + delta
+        axes.set_xlim(xmax=x_max)
+
+    if major_ticks[1] < 1:
+        axes.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
+        major_ticks = axes.xaxis.get_major_locator().tick_values(0, axes.get_xlim()[1])
+
+    for i in major_ticks:
         plt.axvline(x=i,
                     color=constants.DEFAULT_AXLINE_COLOR,
                     linestyle='solid',
                     linewidth=1)
-
+    draw_labels_on_bars(axes=axes, config_dict=config_dict)
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(count_update_scale_value))
     title_text = config_dict.get('bar_title')
     if title_text:
         plt.title(label=title_text,
@@ -571,7 +596,7 @@ def plot_launch_bar_by_country(launch_statistics,
     plt.xlabel('发射次数(总数：{total}，失败：{failure})'.format(
         total=launch_statistics.scs_count + launch_statistics.failure_count,
         failure=launch_statistics.failure_count),
-               fontproperties=config_dict['fprop'], fontsize=18)
+        fontproperties=config_dict['fprop'], fontsize=18)
     plt.ylabel('火箭制造方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(0, 1.0)
@@ -581,4 +606,3 @@ def plot_launch_bar_by_country(launch_statistics,
                     img_x=0.515, img_y=0.1, config_dict=config_dict)
 
     plt.savefig(config_dict['bar_filename'])
-
