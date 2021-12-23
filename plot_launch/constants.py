@@ -53,6 +53,8 @@ DEFAULT_DATA_FILTER = str(CURRENT_TIME.year)
 DATA_PATH = os.path.join(HERE, DEFAULT_DATA_DIR)
 LICENSE_IMG_NAME = 'img/CC BY-NC-SA 4.0.png'
 LICENSE_IMG_PATH = os.path.join(HERE, LICENSE_IMG_NAME)
+DEFAULT_STYLES_NAME = 'font/default_styles.ass'
+DEFAULT_STYLES_PATH = os.path.join(HERE, DEFAULT_STYLES_NAME)
 
 ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '预期轨道')
 

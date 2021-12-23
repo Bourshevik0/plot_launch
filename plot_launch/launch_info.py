@@ -12,6 +12,7 @@ import os
 # Import third-party modules
 import matplotlib
 import matplotlib.font_manager as fm
+import pysubs2
 
 
 # Any changes to the path and your own modules
@@ -322,7 +323,7 @@ def get_orbital_energy(specific_energy_list,
 def get_launch_info_from_files(data_dir,
                                config_dict=None):
     """
-    Defines codes to get launchinfo from multiple raw data files.
+    Get launchinfo from multiple raw data files.
     :param config_dict: A dictionary to control the plotting procedure.
     :param data_dir: A directory path contains several raw data files to read.
     :return LaunchInfoLists: An initialized LaunchInfoLists object.
@@ -343,6 +344,25 @@ def get_launch_info_from_files(data_dir,
                     break
                 index = index + 1
             dir_data.extend(raw_list[:index])
+
+            result = config_dict.get('to_subs')
+            if result:
+                for item in raw_list[:index]:
+                    sub_text = item.replace('：', r'\h\h\h{\fn更纱黑体 SC Semibold\fs45}')
+                    sub_text = sub_text.replace('\n', r'\N{\fs25}\N{\r}')
+                    ssafile = pysubs2.SSAFile.load(path=constants.DEFAULT_STYLES_PATH)
+                    ssafile.events = [pysubs2.SSAEvent(
+                        start=0,
+                        end=5000,
+                        text=sub_text,
+                        style=list(ssafile.styles.keys())[0]
+                    )]
+
+                    i = item.find('\n')
+                    j = item[:i].find('：')
+                    sub_filename = os.path.join(constants.DATA_PATH, item[j + 1:i] + '.ass')
+                    ssafile.save(path=sub_filename)
+
     raw_data = '\n\n'.join(dir_data)
     return LaunchInfoLists.from_raw_data(raw_data=raw_data, config_dict=config_dict)
 
