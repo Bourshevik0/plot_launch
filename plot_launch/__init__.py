@@ -56,9 +56,10 @@ def main():
         i, j = launch_info_lists.get_slice_from_datetime(
             datetime_start=config_dict['latest_month_start'],
             datetime_end=config_dict['latest_month_end'])
-        launch_info_lists.slice_info(new_lists, i, j)
-        new_statistics = launch_plotter.LaunchStatistics(new_lists)
-        config_dict['bar_filename'] = config_dict['latest_month_bar']
-        config_dict['bar_title'] = config_dict['month_title']
-        launch_plotter.plot_launch_bar_by_country(launch_statistics=new_statistics,
-                                                  config_dict=config_dict)
+        if j:
+            launch_info_lists.slice_info(new_lists, i, j)
+            new_statistics = launch_plotter.LaunchStatistics(new_lists)
+            config_dict['bar_filename'] = config_dict['latest_month_bar']
+            config_dict['bar_title'] = config_dict['month_title']
+            launch_plotter.plot_launch_bar_by_country(launch_statistics=new_statistics,
+                                                      config_dict=config_dict)

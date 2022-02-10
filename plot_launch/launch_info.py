@@ -96,13 +96,16 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         j = len(self.time)
         k = 0
         length = j
-        while k < length:
-            if i == 0 and datetime_start < self.time[k]:
-                i = k
-            if j == length and datetime_end < self.time[k]:
-                j = k
-                break
-            k = k + 1
+        if self.time[-1] > datetime_start and self.time[0] < datetime_end:
+            while k < length:
+                if i == 0 and datetime_start < self.time[k]:
+                    i = k
+                if j == length and datetime_end < self.time[k]:
+                    j = k
+                    break
+                k = k + 1
+        else:
+            j = 0
         return i, j
 
     def slice_info(self,
@@ -329,7 +332,7 @@ def get_specific_orbital_energy(orbit_str):
             orbit = orbit.replace('km', '')
             apsis_list = list(map(float, re.findall(r'\d+\.?\d+|\d+', orbit)))
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 * 1E3 \
-                              + constants.NOMINAL_EARTH_RADIUS
+                + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         result_list.append((specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY))
 
@@ -452,7 +455,7 @@ def prcs_config_dict(config_dict):
                     year=constants.CURRENT_TIME.year)),
             'latest_month_bar':
                 os.path.join(constants.HERE,
-                             '{year}{month}_launch_time_by_countries_bar_month.png'.format(
+                             '{year}{month:02d}_launch_time_by_countries_bar_month.png'.format(
                                  year=constants.CURRENT_TIME.year,
                                  month=constants.CURRENT_TIME.month)),
             'month_title': '{year}年{month}月世界航天入轨发射次数统计(柱状图)'.format(
