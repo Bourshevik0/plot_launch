@@ -393,7 +393,13 @@ def from_str_to_datetime(datetime_str,
     :return:
     """
     if not custom_format:
-        if datetime_str.count(':') < 2:
+        colon_count = datetime_str.count(':')
+        if colon_count == 0:
+            if ' ' not in datetime_str.rstrip():
+                time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d')
+            else:
+                time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H')
+        elif colon_count == 1:
             time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
         elif '.' not in datetime_str:
             time_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
