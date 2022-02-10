@@ -174,8 +174,8 @@ def plot_launch_times_by_country(launch_statistics,
                      number=str(y_value[-1])),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(次数)", fontproperties=config_dict['fprop'],
-              transform=axes.transAxes, va='top')
+    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(次数)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top', ha='right')
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
 
@@ -288,8 +288,8 @@ def plot_launch_energy_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(能量)", fontproperties=config_dict['fprop'],
-              transform=axes.transAxes, va='top')
+    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(能量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -369,8 +369,8 @@ def plot_launch_s_energy_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(比能量)", fontproperties=config_dict['fprop'],
-              transform=axes.transAxes, va='top')
+    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(比能量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
@@ -451,8 +451,8 @@ def plot_launch_mass_by_country(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(0.008, 0.67, "火箭制造方\n国家/地区(质量)", fontproperties=config_dict['fprop'],
-              transform=axes.transAxes, va='top')
+    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(质量)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 

@@ -43,6 +43,16 @@ RAW_CODE_DICT = {
     '日本': 'JP'
 }
 
+LOCATION_DICT = {
+    '范登堡太空军基地SLC-3E': '加利福尼亚州圣巴巴拉县',
+    '卡角太空军基地SLC-41': '佛罗里达州布里瓦德县',
+    '卡角太空军基地SLC-40': '佛罗里达州布里瓦德县',
+    '肯尼迪航天中心LC-39A': '佛罗里达州布里瓦德县',
+    '酒泉卫星发射中心': '内蒙古阿拉善额济纳东风镇',
+    '酒泉卫星发射中心9401工位': '内蒙古阿拉善额济纳东风镇',
+    '酒泉卫星发射中心921工位': '内蒙古阿拉善额济纳东风镇'
+}
+
 CURRENT_TIME = datetime.datetime.utcnow()
 
 HERE = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -56,7 +66,7 @@ LICENSE_IMG_PATH = os.path.join(HERE, LICENSE_IMG_NAME)
 DEFAULT_STYLES_NAME = 'font/default_styles.ass'
 DEFAULT_STYLES_PATH = os.path.join(HERE, DEFAULT_STYLES_NAME)
 
-ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '预期轨道')
+ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '实际轨道', '预期轨道')
 
 DEFAULT_DPI = 120
 DEFAULT_FIGSIZE = (16, 9)
