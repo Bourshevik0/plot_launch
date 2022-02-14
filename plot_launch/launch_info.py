@@ -71,6 +71,8 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.orbit = []
         self.s_orbital_energy = []
         # specific orbital energy
+        self.r_orbital_energy = []
+        # relative specific orbital energy
         self.orbital_energy = []
         self.launch_result = []
         self.remarks = []
@@ -80,6 +82,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.recovery_ship = []
 
         # data sources
+        self.data_dicts = []
         # self.citation_seq_tuple_list = []
         # self.sources = []
 
@@ -131,11 +134,13 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         new_info_lists.launcher = self.launcher[i:j]
         new_info_lists.orbit = self.orbit[i:j]
         new_info_lists.s_orbital_energy = self.s_orbital_energy[i:j]
+        new_info_lists.r_orbital_energy = self.r_orbital_energy[i:j]
         new_info_lists.orbital_energy = self.orbital_energy[i:j]
         new_info_lists.launch_result = self.launch_result[i:j]
         new_info_lists.remarks = self.remarks[i:j]
         new_info_lists.recovery_result = self.recovery_result[i:j]
         new_info_lists.recovery_ship = self.recovery_ship[i:j]
+        new_info_lists.data_dicts = self.data_dicts[i:j]
 
     @classmethod
     def from_raw_data(cls,
@@ -201,6 +206,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         :param data_dict: A dictionary of raw data from a single launch.
         :return None:
         """
+        self.data_dicts.append(data_dict)
         # common statistics of launches
         self.identifier.append(data_dict.get('编号'))
         self.launcher_man_country.append(data_dict.get('火箭制造方'))
@@ -259,9 +265,19 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         if result == '成功':
             self.launch_result.append(True)
             s_orbital_energy_list = get_specific_orbital_energy(self.orbit[-1])
-            self.s_orbital_energy.append(round(max(s_orbital_energy_list) / 10000))
-            # unit 10J
-            self.orbital_energy.append(get_orbital_energy(s_orbital_energy_list,
+            r_orbital_energy_list = [s_orbital_energy_list[0]
+                                     - constants.EARTH_SURFACE_POTENTIAL_ENERGY]
+            self.s_orbital_energy.append(s_orbital_energy_list[0])
+            self.r_orbital_energy.append(
+                round((r_orbital_energy_list[-1]) / 10000))
+            for s_orbital_e in s_orbital_energy_list[1:]:
+                r_orbital_energy_list.append(
+                    s_orbital_e - constants.EARTH_SURFACE_POTENTIAL_ENERGY)
+                if self.s_orbital_energy[-1] < s_orbital_e:
+                    self.s_orbital_energy[-1] = s_orbital_e
+                    self.r_orbital_energy[-1] = round(r_orbital_energy_list[-1] / 10000)
+            # unit 10J/kg
+            self.orbital_energy.append(get_orbital_energy(r_orbital_energy_list,
                                                           self.payload_mass[-1]))
             if self.orbital_energy[-1] == 0:
                 print('发射时间：{time}'.format(time=self.time[-1]))
@@ -269,12 +285,15 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 print('载荷信息：{info}'.format(info=self.payload_info[-1]))
                 print('轨道能量：{content:.3g}GJ'.format(
                     content=self.orbital_energy[-1] / 100))
-                print('轨道比能量：{content:.3g}MJ/kg\n'.format(
+                print('轨道比能量：{content:.3g}MJ/kg'.format(
                     content=self.s_orbital_energy[-1] / 100))
+                print('轨道相对比能量：{content:.3g}MJ/kg\n'.format(
+                    content=self.r_orbital_energy[-1] / 100))
         else:
             self.launch_result.append(False)
             self.orbital_energy.append(0)
             self.s_orbital_energy.append(0.0)
+            self.r_orbital_energy.append(0.0)
 
         self.remarks.append(data_dict.get('备注'))
 
@@ -311,6 +330,7 @@ def launch_info_to_subs(key_list,
 def get_specific_orbital_energy(orbit_str):
     """
     Get potential extra specific orbital energy from payload orbit of the orbit_str.
+    Reference: https://en.wikipedia.org/wiki/Specific_orbital_energy
     :param orbit_str: A string contains basic orbit data.
     :return result_list: The specific potential extra orbital energy list from payload(s).
     """
@@ -334,8 +354,7 @@ def get_specific_orbital_energy(orbit_str):
             semi_major_axis = (apsis_list[0] + apsis_list[1]) / 2.0 * 1E3 \
                 + constants.NOMINAL_EARTH_RADIUS
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
-        result_list.append((specific_orbital_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY))
-
+        result_list.append(specific_orbital_energy)
         i = i + 1
     return result_list
 
@@ -352,7 +371,7 @@ def get_orbital_energy(specific_energy_list,
     result = 0.0
     for mass in mass_list:
         result = specific_energy_list[i] * mass / 1E4 + result
-        # 1E3(ton to kg) / 1E7 = 1E4, unit 10MJ
+        # 1E3(ton to kg) / 1E7(unit 10MJ) = 1E4
     return round(result)
 
 
@@ -432,29 +451,29 @@ def prcs_config_dict(config_dict):
                                   day=1),
                 constants.CURRENT_TIME],
             'filename_filter': str(constants.CURRENT_TIME.year),
-            'step_title': '{year}年世界航天入轨发射次数统计(阶跃图)'.format(
+            'step_title': '{year}年世界航天发射次数统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'step_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            'energy_step_title': '{year}年世界航天入轨发射轨道能量统计(阶跃图)'.format(
+            'energy_step_title': '{year}年世界航天发射轨道能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'energy_step_filename':
                 os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            's_energy_step_title': '{year}年世界航天入轨发射轨道比能量统计(阶跃图)'.format(
+            's_energy_step_title': '{year}年世界航天发射轨道相对比能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             's_energy_step_filename':
                 os.path.join(constants.HERE,
                              '{year}_launch_s_energy_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
-            'mass_step_title': '{year}年世界航天入轨发射质量统计(阶跃图)'.format(
+            'mass_step_title': '{year}年世界航天发射质量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'mass_step_filename':
                 os.path.join(constants.HERE,
                              '{year}_mass_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
-            'bar_title': '{year}年世界航天入轨发射次数统计(柱状图)'.format(
+            'bar_title': '{year}年世界航天发射次数统计(柱状图)'.format(
                 year=constants.CURRENT_TIME.year),
             'bar_filename':
                 os.path.join(constants.HERE, '{year}_launch_time_by_countries_bar.png'.format(
@@ -464,7 +483,7 @@ def prcs_config_dict(config_dict):
                              '{year}{month:02d}_launch_time_by_countries_bar_month.png'.format(
                                  year=constants.CURRENT_TIME.year,
                                  month=constants.CURRENT_TIME.month)),
-            'month_title': '{year}年{month}月世界航天入轨发射次数统计(柱状图)'.format(
+            'month_title': '{year}年{month}月世界航天发射次数统计(柱状图)'.format(
                 year=constants.CURRENT_TIME.year,
                 month=constants.CURRENT_TIME.month),
         }

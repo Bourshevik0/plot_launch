@@ -81,7 +81,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                         self.total_launch_s_energy_steps[k - 1]
                     self.total_launch_s_energy_steps[k][idx] = \
                         self.total_launch_s_energy_steps[k - 1][idx] + \
-                        launch_info_lists.s_orbital_energy[i]
+                        launch_info_lists.r_orbital_energy[i]
 
                     if len(launch_info_lists.payload_mass[i]) > 1:
                         self.total_launch_mass_steps[k] = \
@@ -97,7 +97,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                 else:
                     self.total_launch_energy_steps[k][idx] = launch_info_lists.orbital_energy[i]
                     self.total_launch_s_energy_steps[k][idx] = \
-                        launch_info_lists.s_orbital_energy[i]
+                        launch_info_lists.r_orbital_energy[i]
                     if len(launch_info_lists.payload_mass[i]) > 1:
                         self.total_launch_mass_steps[k][idx] = \
                             round(sum(launch_info_lists.payload_mass[i]) * 1000)
