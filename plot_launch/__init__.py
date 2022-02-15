@@ -39,8 +39,8 @@ def main():
     if 'energy_step_filename' in config_dict:
         launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
                                                      config_dict=config_dict)
-    if 's_energy_step_filename' in config_dict:
-        launch_plotter.plot_launch_s_energy_by_country(launch_statistics=launch_statistics,
+    if 'r_energy_step_filename' in config_dict:
+        launch_plotter.plot_launch_r_energy_by_country(launch_statistics=launch_statistics,
                                                        config_dict=config_dict)
 
     if 'mass_step_filename' in config_dict:

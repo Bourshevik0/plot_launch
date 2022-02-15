@@ -81,8 +81,9 @@ GEO_CONSTANT = 3.9860044E14
 # reference https://en.wikipedia.org/wiki/Standard_gravitational_parameter
 # #Geocentric_gravitational_constant
 
-EARTH_SURFACE_POTENTIAL_ENERGY = 0.0 - 6.26E7
-# reference https://en.wikipedia.org/wiki/Specific_orbital_energy#Examples
+EARTH_SURFACE_POTENTIAL_ENERGY = - 6.25E7
+# reference https://en.wikipedia.org/wiki/Specific_orbital_energy
+# GEO_CONSTANT / NOMINAL_EARTH_RADIUS
 
 NOMINAL_EARTH_RADIUS = 6.378145E6
 # reference https://en.wikipedia.org/wiki/Earth_radius#Nominal_radius

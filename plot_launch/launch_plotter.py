@@ -59,7 +59,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
 
         self.total_launch_energy_steps = numpy.zeros(
             (self.scs_count, self.countries_length), dtype=int)
-        self.total_launch_s_energy_steps = numpy.zeros(
+        self.total_launch_r_energy_steps = numpy.zeros(
             (self.scs_count, self.countries_length), dtype=int)
         self.total_launch_mass_steps = numpy.zeros(
             (self.scs_count, self.countries_length), dtype=int)
@@ -77,10 +77,10 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                         self.total_launch_energy_steps[k - 1][idx] + \
                         launch_info_lists.orbital_energy[i]
 
-                    self.total_launch_s_energy_steps[k] = \
-                        self.total_launch_s_energy_steps[k - 1]
-                    self.total_launch_s_energy_steps[k][idx] = \
-                        self.total_launch_s_energy_steps[k - 1][idx] + \
+                    self.total_launch_r_energy_steps[k] = \
+                        self.total_launch_r_energy_steps[k - 1]
+                    self.total_launch_r_energy_steps[k][idx] = \
+                        self.total_launch_r_energy_steps[k - 1][idx] + \
                         launch_info_lists.r_orbital_energy[i]
 
                     if len(launch_info_lists.payload_mass[i]) > 1:
@@ -96,7 +96,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                             round(launch_info_lists.payload_mass[i][0] * 1000)
                 else:
                     self.total_launch_energy_steps[k][idx] = launch_info_lists.orbital_energy[i]
-                    self.total_launch_s_energy_steps[k][idx] = \
+                    self.total_launch_r_energy_steps[k][idx] = \
                         launch_info_lists.r_orbital_energy[i]
                     if len(launch_info_lists.payload_mass[i]) > 1:
                         self.total_launch_mass_steps[k][idx] = \
@@ -339,7 +339,7 @@ def plot_launch_energy_by_country(launch_statistics,
     plt.savefig(config_dict['energy_step_filename'])
 
 
-def plot_launch_s_energy_by_country(launch_statistics,
+def plot_launch_r_energy_by_country(launch_statistics,
                                     config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
@@ -357,7 +357,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
                              dpi=constants.DEFAULT_DPI)
 
     for j in numpy.arange(0, launch_statistics.countries_length):
-        y_value = launch_statistics.total_launch_s_energy_steps[:, j]
+        y_value = launch_statistics.total_launch_r_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 100000, 2))
@@ -374,7 +374,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
 
-    title_text = config_dict.get('s_energy_step_title')
+    title_text = config_dict.get('r_energy_step_title')
     if title_text:
         plt.title(label=title_text,
                   y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
@@ -417,7 +417,7 @@ def plot_launch_s_energy_by_country(launch_statistics,
 
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
-    plt.savefig(config_dict['s_energy_step_filename'])
+    plt.savefig(config_dict['r_energy_step_filename'])
 
 
 def plot_launch_mass_by_country(launch_statistics,

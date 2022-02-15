@@ -9,6 +9,7 @@ import datetime
 import re
 import os
 from calendar import monthrange
+import math
 
 # Import third-party modules
 import matplotlib
@@ -74,6 +75,9 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.r_orbital_energy = []
         # relative specific orbital energy
         self.orbital_energy = []
+        # total orbital energy
+        self.delta_v = []
+        # ideal delta velocity to certain orbital
         self.launch_result = []
         self.remarks = []
 
@@ -136,6 +140,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         new_info_lists.s_orbital_energy = self.s_orbital_energy[i:j]
         new_info_lists.r_orbital_energy = self.r_orbital_energy[i:j]
         new_info_lists.orbital_energy = self.orbital_energy[i:j]
+        new_info_lists.delta_v = self.delta_v[i:j]
         new_info_lists.launch_result = self.launch_result[i:j]
         new_info_lists.remarks = self.remarks[i:j]
         new_info_lists.recovery_result = self.recovery_result[i:j]
@@ -279,6 +284,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             # unit 10J/kg
             self.orbital_energy.append(get_orbital_energy(r_orbital_energy_list,
                                                           self.payload_mass[-1]))
+            self.delta_v.append(round(max(get_delta_v(s_orbital_energy_list))))
             if self.orbital_energy[-1] == 0:
                 print('发射时间：{time}'.format(time=self.time[-1]))
                 print('火箭：{rocket}'.format(rocket=self.launcher[-1]))
@@ -289,11 +295,14 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                     content=self.s_orbital_energy[-1] / 100))
                 print('轨道相对比能量：{content:.3g}MJ/kg\n'.format(
                     content=self.r_orbital_energy[-1] / 100))
+                print('轨道理想dv：{content:.3g}km/s\n'.format(
+                    content=self.delta_v[-1] / 1000))
         else:
             self.launch_result.append(False)
             self.orbital_energy.append(0)
             self.s_orbital_energy.append(0.0)
-            self.r_orbital_energy.append(0.0)
+            self.r_orbital_energy.append(0)
+            self.delta_v.append(0)
 
         self.remarks.append(data_dict.get('备注'))
 
@@ -329,7 +338,7 @@ def launch_info_to_subs(key_list,
 
 def get_specific_orbital_energy(orbit_str):
     """
-    Get potential extra specific orbital energy from payload orbit of the orbit_str.
+    Get the specific orbital energy from the orbit_str.
     Reference: https://en.wikipedia.org/wiki/Specific_orbital_energy
     :param orbit_str: A string contains basic orbit data.
     :return result_list: The specific potential extra orbital energy list from payload(s).
@@ -356,6 +365,22 @@ def get_specific_orbital_energy(orbit_str):
             specific_orbital_energy = 0.0 - constants.GEO_CONSTANT / (2.0 * semi_major_axis)
         result_list.append(specific_orbital_energy)
         i = i + 1
+    return result_list
+
+
+def get_delta_v(s_orbital_energy_list):
+    """
+    Get the ideal delta velocity from the specific orbital energy.
+    Reference: https://en.wikipedia.org/wiki/Vis-viva_equation
+    https://en.wikipedia.org/wiki/Characteristic_energy
+    :param s_orbital_energy_list: A list contains s_orbital_energy.
+    :return result_list: The specific potential extra orbital energy list from payload(s).
+    """
+    result_list = []
+    for s_orbital_energy in s_orbital_energy_list:
+        c3_energy = s_orbital_energy * 2
+        delta_v = math.sqrt(c3_energy - constants.EARTH_SURFACE_POTENTIAL_ENERGY * 2)
+        result_list.append(delta_v)
     return result_list
 
 
@@ -461,11 +486,11 @@ def prcs_config_dict(config_dict):
             'energy_step_filename':
                 os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
-            's_energy_step_title': '{year}年世界航天发射轨道相对比能量统计(阶跃图)'.format(
+            'r_energy_step_title': '{year}年世界航天发射轨道相对比能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
-            's_energy_step_filename':
+            'r_energy_step_filename':
                 os.path.join(constants.HERE,
-                             '{year}_launch_s_energy_by_countries_step.png'.format(
+                             '{year}_launch_r_energy_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
             'mass_step_title': '{year}年世界航天发射质量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
