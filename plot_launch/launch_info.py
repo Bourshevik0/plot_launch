@@ -492,6 +492,12 @@ def prcs_config_dict(config_dict):
                 os.path.join(constants.HERE,
                              '{year}_launch_r_energy_by_countries_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
+            'delta_v_step_title': '{year}年世界航天发射轨道理想dv统计(阶跃图)'.format(
+                year=constants.CURRENT_TIME.year),
+            'delta_v_step_filename':
+                os.path.join(constants.HERE,
+                             '{year}_delta_v_by_countries_step.png'.format(
+                                 year=constants.CURRENT_TIME.year)),
             'mass_step_title': '{year}年世界航天发射质量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'mass_step_filename':

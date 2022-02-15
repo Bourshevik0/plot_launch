@@ -42,6 +42,9 @@ def main():
     if 'r_energy_step_filename' in config_dict:
         launch_plotter.plot_launch_r_energy_by_country(launch_statistics=launch_statistics,
                                                        config_dict=config_dict)
+    if 'delta_v_step_filename' in config_dict:
+        launch_plotter.plot_launch_delta_v_by_country(launch_statistics=launch_statistics,
+                                                      config_dict=config_dict)
 
     if 'mass_step_filename' in config_dict:
         launch_plotter.plot_launch_mass_by_country(launch_statistics=launch_statistics,

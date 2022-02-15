@@ -61,6 +61,8 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
             (self.scs_count, self.countries_length), dtype=int)
         self.total_launch_r_energy_steps = numpy.zeros(
             (self.scs_count, self.countries_length), dtype=int)
+        self.total_launch_delta_v_steps = numpy.zeros(
+            (self.scs_count, self.countries_length), dtype=int)
         self.total_launch_mass_steps = numpy.zeros(
             (self.scs_count, self.countries_length), dtype=int)
 
@@ -83,6 +85,12 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                         self.total_launch_r_energy_steps[k - 1][idx] + \
                         launch_info_lists.r_orbital_energy[i]
 
+                    self.total_launch_delta_v_steps[k] = \
+                        self.total_launch_delta_v_steps[k - 1]
+                    self.total_launch_delta_v_steps[k][idx] = \
+                        self.total_launch_delta_v_steps[k - 1][idx] + \
+                        launch_info_lists.delta_v[i]
+
                     if len(launch_info_lists.payload_mass[i]) > 1:
                         self.total_launch_mass_steps[k] = \
                             self.total_launch_mass_steps[k - 1]
@@ -98,6 +106,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                     self.total_launch_energy_steps[k][idx] = launch_info_lists.orbital_energy[i]
                     self.total_launch_r_energy_steps[k][idx] = \
                         launch_info_lists.r_orbital_energy[i]
+                    self.total_launch_delta_v_steps[k][idx] = launch_info_lists.delta_v[i]
                     if len(launch_info_lists.payload_mass[i]) > 1:
                         self.total_launch_mass_steps[k][idx] = \
                             round(sum(launch_info_lists.payload_mass[i]) * 1000)
@@ -245,6 +254,16 @@ def energy_update_scale_value(temp, position):
     :return:
     """
     result = temp / 100000
+    return '{result}'.format(result=result)
+
+
+def dv_update_scale_value(temp, position):
+    """
+    :param temp:
+    :param position:
+    :return:
+    """
+    result = int(temp / 1000)
     return '{result}'.format(result=result)
 
 
@@ -418,6 +437,87 @@ def plot_launch_r_energy_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['r_energy_step_filename'])
+
+
+def plot_launch_delta_v_by_country(launch_statistics,
+                                   config_dict):
+    """
+    :param launch_statistics: A LaunchStatistics object.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return None:
+    """
+    x_min = config_dict['time_filter'][0]
+
+    x_value = [x_min] + launch_statistics.successful_launch_time
+    x_max = config_dict['time_filter'][1]
+    x_value.append(x_max)
+
+    fig, axes = plt.subplots(1,
+                             figsize=constants.DEFAULT_FIGSIZE,
+                             dpi=constants.DEFAULT_DPI)
+
+    for j in numpy.arange(0, launch_statistics.countries_length):
+        y_value = launch_statistics.total_launch_delta_v_steps[:, j]
+        y_value = numpy.append(0, y_value)
+        y_value = numpy.append(y_value, y_value[-1])
+        label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
+        plt.plot(x_value, y_value,
+                 drawstyle='steps-post',
+                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 label='{country}({number})'.format(
+                     country=launch_statistics.countries[j],
+                     number=label_value),
+                 linewidth=3)
+    plt.legend(prop=config_dict['fprop'], loc=2)
+    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(dv)", fontproperties=config_dict['fprop'],
+              transform=axes.transAxes, va='top', ha='right')
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(dv_update_scale_value))
+    axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
+
+    title_text = config_dict.get('delta_v_step_title')
+    if title_text:
+        plt.title(label=title_text,
+                  y=1.01, fontproperties=config_dict['fprop_title'], fontsize=35)
+    plt.xlabel('时间', fontproperties=config_dict['fprop'], fontsize=18)
+    plt.ylabel('dv\n(千米/秒)\n(km/s)', fontproperties=config_dict['fprop'],
+               rotation=0, fontsize=12)
+    axes.xaxis.set_label_coords(0.5, -0.06)
+    axes.yaxis.set_label_coords(1.075, 0.5)
+    plt.ylim(ymin=0)
+    plt.xlim(x_min,
+             xmax=x_max)
+    axes.yaxis.tick_right()
+    axes.yaxis.set_label_position('right')
+    for label in axes.get_xticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+    for label in axes.get_yticklabels():
+        label.set_fontproperties(config_dict['fprop'])
+
+    for i in axes.yaxis.get_major_locator().tick_values(0, axes.get_ylim()[1]):
+        plt.axhline(y=i, color=constants.DEFAULT_AXLINE_COLOR, linestyle='solid', linewidth=0.5)
+
+    i = 1
+    day_tuple = (1, 16)
+    j = 1
+    datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
+                                   month=i,
+                                   day=day_tuple[j])
+
+    while datetime_i < x_max and i < 13:
+        datetime_i = datetime.datetime(year=launch_statistics.successful_launch_time[0].year,
+                                       month=i,
+                                       day=day_tuple[j])
+        plt.axvline(x=datetime_i,
+                    color=constants.DEFAULT_AXLINE_COLOR,
+                    linestyle='solid',
+                    linewidth=1)
+        i = i + j % 2
+        j = j + 1
+        j = j % 2
+
+    draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
+                    img_x=0.28, img_y=0.60, config_dict=config_dict)
+    plt.savefig(config_dict['delta_v_step_filename'])
 
 
 def plot_launch_mass_by_country(launch_statistics,
