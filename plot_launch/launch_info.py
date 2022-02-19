@@ -121,6 +121,9 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                    j):
         """
         Slice self into a new_info_lists.
+        :param new_info_lists: An empty LaunchInfoLists class variable to get the result.
+        :param i: A start sequence i.
+        :param j: An end sequence j.
         :return None:
         """
         new_info_lists.identifier = self.identifier[i:j]

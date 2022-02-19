@@ -6,6 +6,7 @@ Defines codes needed to plot using matplotlib and numpy.
 
 # Import built-in modules
 import datetime
+import gc
 
 # Import third-party modules
 import matplotlib
@@ -236,6 +237,10 @@ def plot_launch_times_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['step_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
 
 
 def count_update_scale_value(temp, position):
@@ -356,6 +361,10 @@ def plot_launch_energy_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['energy_step_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
 
 
 def plot_launch_r_energy_by_country(launch_statistics,
@@ -437,6 +446,10 @@ def plot_launch_r_energy_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['r_energy_step_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
 
 
 def plot_launch_delta_v_by_country(launch_statistics,
@@ -518,6 +531,10 @@ def plot_launch_delta_v_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['delta_v_step_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
 
 
 def plot_launch_mass_by_country(launch_statistics,
@@ -598,6 +615,10 @@ def plot_launch_mass_by_country(launch_statistics,
     draw_cc_license(axes=axes, fig=fig, text_x=0.2, text_y=0.95,
                     img_x=0.28, img_y=0.60, config_dict=config_dict)
     plt.savefig(config_dict['mass_step_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
 
 
 def draw_labels_on_bars(axes,
@@ -706,3 +727,7 @@ def plot_launch_bar_by_country(launch_statistics,
                     img_x=0.515, img_y=0.1, config_dict=config_dict)
 
     plt.savefig(config_dict['bar_filename'])
+    plt.cla()
+    plt.clf()
+    plt.close('all')
+    gc.collect()
