@@ -519,7 +519,7 @@ def prcs_config_dict(config_dict):
                                  month=constants.CURRENT_TIME.month)),
             'month_title': '{year}年{month}月世界航天发射次数统计(柱状图)'.format(
                 year=constants.CURRENT_TIME.year,
-                month=constants.CURRENT_TIME.month),
+                month=constants.CURRENT_TIME.month)
         }
     if config_dict['time_filter'][1] > constants.CURRENT_TIME:
         config_dict['time_filter'][1] = constants.CURRENT_TIME
@@ -540,6 +540,14 @@ def prcs_config_dict(config_dict):
 
     config_dict['fprop_title'] = fm.FontProperties(fname=constants.FONT_PATH)
     config_dict['fprop'] = fm.FontProperties(fname=constants.FONT_PATH)
+
+    if 'fig_size' in config_dict:
+        config_dict['fig_size'] = tuple(config_dict['fig_size'])
+    else:
+        config_dict['fig_size'] = constants.DEFAULT_FIGSIZE
+    if 'dpi' not in config_dict:
+        config_dict['dpi'] = constants.DEFAULT_DPI
+
     return config_dict
 
 # if __name__ == '__main__':

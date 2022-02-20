@@ -169,8 +169,8 @@ def plot_launch_times_by_country(launch_statistics,
     x_value.append(x_max)
 
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
 
     for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_steps[:, j]
@@ -296,8 +296,8 @@ def plot_launch_energy_by_country(launch_statistics,
     x_value.append(x_max)
 
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
 
     for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_energy_steps[:, j]
@@ -381,8 +381,8 @@ def plot_launch_r_energy_by_country(launch_statistics,
     x_value.append(x_max)
 
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
 
     for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_r_energy_steps[:, j]
@@ -466,8 +466,8 @@ def plot_launch_delta_v_by_country(launch_statistics,
     x_value.append(x_max)
 
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
 
     for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_delta_v_steps[:, j]
@@ -552,8 +552,8 @@ def plot_launch_mass_by_country(launch_statistics,
     x_value.append(x_max)
 
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
 
     for j in numpy.arange(0, launch_statistics.countries_length):
         y_value = launch_statistics.total_launch_mass_steps[:, j]
@@ -671,8 +671,8 @@ def plot_launch_bar_by_country(launch_statistics,
     for country in launch_statistics.countries[indices]:
         y_axis_labels.append(country)
     fig, axes = plt.subplots(1,
-                             figsize=constants.DEFAULT_FIGSIZE,
-                             dpi=constants.DEFAULT_DPI)
+                             figsize=config_dict['fig_size'],
+                             dpi=config_dict['dpi'])
     axes.yaxis.set_ticks(numpy.arange(0, launch_statistics.countries_length), rotation=0)
     axes.yaxis.set_ticklabels(y_axis_labels, fontproperties=config_dict['fprop'],
                               rotation=0, fontsize=20)
