@@ -192,10 +192,6 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 else:
                     data_dict[last_key] = data_dict[last_key] + text
                     value_list[-1] = data_dict[last_key]
-            result = config_dict.get('to_subs')
-            if result:
-                launch_info_to_subs(key_list=key_list, value_list=value_list,
-                                    output_path=result)
             time_str = data_dict.get('时间')
             time_str_part = time_str[:time_str.find('(')]
             time_obj = from_str_to_datetime(time_str_part)
@@ -205,6 +201,11 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 continue
             launch_info_lists.time.append(time_obj)
             launch_info_lists.append_dict(data_dict)
+
+            result = config_dict.get('to_subs')
+            if result:
+                launch_info_to_subs(key_list=key_list, value_list=value_list,
+                                    output_path=result)
         return launch_info_lists
 
     def append_dict(self,
