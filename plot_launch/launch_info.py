@@ -36,7 +36,7 @@ from plot_launch import constants
 #                     data_dict):
 #         """
 #         :param data_dict:  A dictionary of raw data from a single launch.
-#         :return: None
+#         :return None:
 #         """
 #         self.payload_operator.append(data_dict.get('载荷运营方'))
 #         self.payload_man.append(data_dict.get('载荷研制方'))
@@ -289,9 +289,10 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             self.orbital_energy.append(get_orbital_energy(r_orbital_energy_list,
                                                           self.payload_mass[-1]))
             self.delta_v.append(round(max(get_delta_v(s_orbital_energy_list))))
-            if self.orbital_energy[-1] == 0:
+            if self.orbital_energy[-1] == 0 or not self.launch_provider[-1]:
                 print('发射时间：{time}'.format(time=self.time[-1]))
                 print('火箭：{rocket}'.format(rocket=self.launcher[-1]))
+                print('发射提供方：{lp}'.format(lp=self.launch_provider[-1]))
                 print('载荷信息：{info}'.format(info=self.payload_info[-1]))
                 print('轨道能量：{content:.3g}GJ'.format(
                     content=self.orbital_energy[-1] / 100))
@@ -467,7 +468,7 @@ def prcs_config_dict(config_dict):
     """
     matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
 
-    if config_dict:
+    if config_dict and 'group_by' in config_dict:
         config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
                                                            config_dict['time_filter_format']),
                                       from_str_to_datetime(config_dict['time_filter'][1],
@@ -479,43 +480,44 @@ def prcs_config_dict(config_dict):
                                   month=1,
                                   day=1),
                 constants.CURRENT_TIME],
+            'group_by': '火箭制造方',
             'filename_filter': str(constants.CURRENT_TIME.year),
             'step_title': '{year}年世界航天发射次数统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'step_filename':
-                os.path.join(constants.HERE, '{year}_launch_time_by_countries_step.png'.format(
+                os.path.join(constants.HERE, '{year}_launch_time_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
             'energy_step_title': '{year}年世界航天发射轨道能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'energy_step_filename':
-                os.path.join(constants.HERE, '{year}_launch_energy_by_countries_step.png'.format(
+                os.path.join(constants.HERE, '{year}_launch_energy_step.png'.format(
                     year=constants.CURRENT_TIME.year)),
             'r_energy_step_title': '{year}年世界航天发射轨道相对比能量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'r_energy_step_filename':
                 os.path.join(constants.HERE,
-                             '{year}_launch_r_energy_by_countries_step.png'.format(
+                             '{year}_launch_r_energy_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
             'delta_v_step_title': '{year}年世界航天发射轨道理想dv统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'delta_v_step_filename':
                 os.path.join(constants.HERE,
-                             '{year}_delta_v_by_countries_step.png'.format(
+                             '{year}_delta_v_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
             'mass_step_title': '{year}年世界航天发射质量统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
             'mass_step_filename':
                 os.path.join(constants.HERE,
-                             '{year}_mass_by_countries_step.png'.format(
+                             '{year}_mass_step.png'.format(
                                  year=constants.CURRENT_TIME.year)),
             'bar_title': '{year}年世界航天发射次数统计(柱状图)'.format(
                 year=constants.CURRENT_TIME.year),
             'bar_filename':
-                os.path.join(constants.HERE, '{year}_launch_time_by_countries_bar.png'.format(
+                os.path.join(constants.HERE, '{year}_launch_time_bar.png'.format(
                     year=constants.CURRENT_TIME.year)),
             'latest_month_bar':
                 os.path.join(constants.HERE,
-                             '{year}{month:02d}_launch_time_by_countries_bar_month.png'.format(
+                             '{year}{month:02d}_launch_time_bar_month.png'.format(
                                  year=constants.CURRENT_TIME.year,
                                  month=constants.CURRENT_TIME.month)),
             'month_title': '{year}年{month}月世界航天发射次数统计(柱状图)'.format(

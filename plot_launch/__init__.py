@@ -26,22 +26,44 @@ def main():
     matplotlib.use('Agg')
     if len(sys.argv) > 1:
         with open(sys.argv[1], encoding='utf-8') as config_file:
-            config_dict = json.load(config_file)
+            config_obj = json.load(config_file)
     else:
-        config_dict = None
+        config_obj = None
 
-    config_dict = launch_info.prcs_config_dict(config_dict)
+    if not isinstance(config_obj, list):
+        config_obj = [config_obj]
 
+    for config_dict in config_obj:
+        config_dict = launch_info.prcs_config_dict(config_dict)
+        plot_config(config_dict)
+
+
+def plot_config(config_dict):
+    """
+    Plot by config.
+    :param config_dict: A dictionary to control the plotting procedure.
+    :return None:
+    """
     launch_info_lists = launch_info.get_launch_info_from_files(constants.DATA_PATH,
                                                                config_dict=config_dict)
     # info_set = set()
     # for data_dict in launch_info_lists.data_dicts:
     #     info_set = info_set | set(data_dict.keys())
 
+    if config_dict['group_by'] == '火箭制造方':
+        group_text = '火箭制造方\n国家/地区'
+        group_list = launch_info_lists.launcher_man_country
+    elif config_dict['group_by'] == '发射提供方':
+        group_text = '发射提供方\n公司/组织'
+        group_list = launch_info_lists.launch_provider
+    else:
+        return
+
     if 'image_seq' not in config_dict:
         launch_statistics = launch_plotter.LaunchStatistics(
             launch_info_lists=launch_info_lists,
-            group_list=launch_info_lists.launcher_man_country)
+            group_list=group_list,
+            group_text=group_text)
 
         if 'step_filename' in config_dict:
             launch_plotter.plot_launch_times(launch_statistics=launch_statistics,
@@ -74,7 +96,8 @@ def main():
                 launch_info_lists.slice_info(new_lists, i, j)
                 new_statistics = launch_plotter.LaunchStatistics(
                     launch_info_lists=new_lists,
-                    group_list=new_lists.launcher_man_country)
+                    group_list=new_lists.launcher_man_country,
+                    group_text='火箭制造方\n国家/地区')
                 config_dict['bar_filename'] = config_dict['latest_month_bar']
                 config_dict['bar_title'] = config_dict['month_title']
                 launch_plotter.plot_launch_bar(launch_statistics=new_statistics,
@@ -91,7 +114,8 @@ def main():
             launch_info_lists.slice_info(new_lists, i, j)
             launch_statistics = launch_plotter.LaunchStatistics(
                 launch_info_lists=new_lists,
-                group_list=new_lists.launcher_man_country)
+                group_list=new_lists.launcher_man_country,
+                group_text='火箭制造方\n国家/地区')
             if j < launch_count - 1:
                 config_dict['time_filter'][1] = launch_info_lists.time[j]
             else:

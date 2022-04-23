@@ -26,12 +26,16 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
 
     def __init__(self,
                  launch_info_lists,
-                 group_list):
+                 group_list,
+                 group_text):
         """
         Get all the statistics needed for the plot.
         :param launch_info_lists: A LaunchInfoLists object.
+        :param group_list: A group to segment launch data.
+        :param group_text: A text string to describe the group.
         """
         self.groups = numpy.unique(group_list)
+        self.group_text = group_text
         groups_dict = {value: key for key, value in enumerate(self.groups)}
         self.groups_length = len(self.groups)
         if self.groups[0] in constants.HEX_COLOR_DICT:
@@ -43,7 +47,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
             if self.groups_length < color_length:
                 self.color = constants.HEX_COLOR_LIST[:self.groups_length]
             else:
-                self.color = constants.HEX_COLOR_LIST * (self.groups_length / color_length) + \
+                self.color = constants.HEX_COLOR_LIST * int(self.groups_length / color_length) + \
                              constants.HEX_COLOR_LIST[:self.groups_length % color_length]
         launch_count = len(launch_info_lists.time)
         self.total_launch_steps = numpy.zeros(
@@ -199,7 +203,8 @@ def plot_launch_times(launch_statistics,
                      number=str(y_value[-1])),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(次数)", fontproperties=config_dict['fprop'],
+    axes.text(-0.008, 0.98, launch_statistics.group_text + '(次数)',
+              fontproperties=config_dict['fprop'],
               transform=axes.transAxes, va='top', ha='right')
     axes.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     axes.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
@@ -314,7 +319,10 @@ def plot_launch_energy(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in launch_statistics.r_indices:
+    last_values = launch_statistics.total_launch_energy_steps[-1:].flatten()
+    r_indices = numpy.flip(numpy.argsort(last_values))
+
+    for j in r_indices:
         y_value = launch_statistics.total_launch_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -327,7 +335,8 @@ def plot_launch_energy(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(能量)", fontproperties=config_dict['fprop'],
+    axes.text(-0.008, 0.98, launch_statistics.group_text + '(能量)',
+              fontproperties=config_dict['fprop'],
               transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
@@ -399,7 +408,10 @@ def plot_launch_r_energy(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in launch_statistics.r_indices:
+    last_values = launch_statistics.total_launch_r_energy_steps[-1:].flatten()
+    r_indices = numpy.flip(numpy.argsort(last_values))
+
+    for j in r_indices:
         y_value = launch_statistics.total_launch_r_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -412,7 +424,8 @@ def plot_launch_r_energy(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(比能量)", fontproperties=config_dict['fprop'],
+    axes.text(-0.008, 0.98, launch_statistics.group_text + '(比能量)',
+              fontproperties=config_dict['fprop'],
               transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(energy_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
@@ -484,7 +497,10 @@ def plot_launch_delta_v(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in launch_statistics.r_indices:
+    last_values = launch_statistics.total_launch_delta_v_steps[-1:].flatten()
+    r_indices = numpy.flip(numpy.argsort(last_values))
+
+    for j in r_indices:
         y_value = launch_statistics.total_launch_delta_v_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -497,7 +513,8 @@ def plot_launch_delta_v(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(dv)", fontproperties=config_dict['fprop'],
+    axes.text(-0.008, 0.98, launch_statistics.group_text + '(dv)',
+              fontproperties=config_dict['fprop'],
               transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(dv_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
@@ -570,7 +587,10 @@ def plot_launch_mass(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in launch_statistics.r_indices:
+    last_values = launch_statistics.total_launch_mass_steps[-1:].flatten()
+    r_indices = numpy.flip(numpy.argsort(last_values))
+
+    for j in r_indices:
         y_value = launch_statistics.total_launch_mass_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -583,7 +603,8 @@ def plot_launch_mass(launch_statistics,
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
-    axes.text(-0.008, 0.98, "火箭制造方\n国家/地区(质量)", fontproperties=config_dict['fprop'],
+    axes.text(-0.008, 0.98, launch_statistics.group_text + '(质量)',
+              fontproperties=config_dict['fprop'],
               transform=axes.transAxes, va='top', ha='right')
     plt.gca().yaxis.set_major_formatter(FuncFormatter(mass_update_scale_value))
     axes.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator())
@@ -662,7 +683,7 @@ def draw_labels_on_bars(axes,
             y_x_dict[y_value] = x_value
         else:
             x_value = y_x_dict[y_value] + x_value
-        label = "{:.0f}".format(label_value)
+        label = '{:.0f}'.format(label_value)
         axes.annotate(
             label,
             (x_value, y_value),
@@ -733,7 +754,8 @@ def plot_launch_bar(launch_statistics,
         total=launch_statistics.scs_count + launch_statistics.failure_count,
         failure=launch_statistics.failure_count),
         fontproperties=config_dict['fprop'], fontsize=18)
-    plt.ylabel('火箭制造方\n(国家/地区)', fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
+    plt.ylabel(launch_statistics.group_text,
+               fontproperties=config_dict['fprop'], rotation=0, fontsize=16)
     axes.xaxis.set_label_coords(0.5, -0.06)
     axes.yaxis.set_label_coords(0, 1.0)
     plt.legend(prop=config_dict['fprop'], loc=1)
