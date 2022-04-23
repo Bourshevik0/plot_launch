@@ -297,7 +297,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                     content=self.orbital_energy[-1] / 100))
                 print('轨道比能量：{content:.3g}MJ/kg'.format(
                     content=self.s_orbital_energy[-1] / 100))
-                print('轨道相对比能量：{content:.3g}MJ/kg\n'.format(
+                print('轨道相对比能量：{content:.3g}MJ/kg'.format(
                     content=self.r_orbital_energy[-1] / 100))
                 print('轨道理想dv：{content:.3g}km/s\n'.format(
                     content=self.delta_v[-1] / 1000))
@@ -532,10 +532,14 @@ def prcs_config_dict(config_dict):
             day=1)
         config_dict['latest_month_end'] = config_dict['time_filter'][1]
         if start == config_dict['latest_month_end']:
-            config_dict['latest_month_start'] = \
-                config_dict['latest_month_end'] - datetime.timedelta(
-                    days=monthrange(config_dict['latest_month_end'].year,
-                                    config_dict['latest_month_end'].month)[1])
+            if config_dict['latest_month_end'].month > 1:
+                config_dict['latest_month_start'] = \
+                    config_dict['latest_month_end'] - datetime.timedelta(
+                        days=monthrange(config_dict['latest_month_end'].year,
+                                        config_dict['latest_month_end'].month - 1)[1])
+            else:
+                config_dict['latest_month_start'] = \
+                    config_dict['latest_month_end'] - datetime.timedelta(days=31)
         else:
             config_dict['latest_month_start'] = start
 
