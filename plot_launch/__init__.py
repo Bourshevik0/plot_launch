@@ -39,7 +39,9 @@ def main():
     #     info_set = info_set | set(data_dict.keys())
 
     if 'image_seq' not in config_dict:
-        launch_statistics = launch_plotter.LaunchStatistics(launch_info_lists)
+        launch_statistics = launch_plotter.LaunchStatistics(
+            launch_info_lists=launch_info_lists,
+            group_list=launch_info_lists.launcher_man_country)
 
         if 'step_filename' in config_dict:
             launch_plotter.plot_launch_times(launch_statistics=launch_statistics,
@@ -70,7 +72,9 @@ def main():
                 datetime_end=config_dict['latest_month_end'])
             if j:
                 launch_info_lists.slice_info(new_lists, i, j)
-                new_statistics = launch_plotter.LaunchStatistics(new_lists)
+                new_statistics = launch_plotter.LaunchStatistics(
+                    launch_info_lists=new_lists,
+                    group_list=launch_info_lists.launcher_man_country)
                 config_dict['bar_filename'] = config_dict['latest_month_bar']
                 config_dict['bar_title'] = config_dict['month_title']
                 launch_plotter.plot_launch_bar(launch_statistics=new_statistics,
@@ -85,7 +89,9 @@ def main():
         e_filename_list = os.path.splitext(config_dict['energy_step_filename'])
         for j in range(1, launch_count):
             launch_info_lists.slice_info(new_lists, i, j)
-            launch_statistics = launch_plotter.LaunchStatistics(new_lists)
+            launch_statistics = launch_plotter.LaunchStatistics(
+                launch_info_lists=new_lists,
+                group_list=launch_info_lists.launcher_man_country)
             if j < launch_count - 1:
                 config_dict['time_filter'][1] = launch_info_lists.time[j]
             else:

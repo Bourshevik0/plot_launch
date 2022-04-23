@@ -25,14 +25,26 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self,
-                 launch_info_lists):
+                 launch_info_lists,
+                 group_list):
         """
         Get all the statistics needed for the plot.
         :param launch_info_lists: A LaunchInfoLists object.
         """
-        self.groups = numpy.unique(launch_info_lists.launcher_man_country)
+        self.groups = numpy.unique(group_list)
         groups_dict = {value: key for key, value in enumerate(self.groups)}
         self.groups_length = len(self.groups)
+        if self.groups[0] in constants.HEX_COLOR_DICT:
+            self.color = []
+            for group_name in self.groups:
+                self.color.append(constants.HEX_COLOR_DICT[group_name])
+        else:
+            color_length = len(constants.HEX_COLOR_LIST)
+            if self.groups_length < color_length:
+                self.color = constants.HEX_COLOR_LIST[:self.groups_length]
+            else:
+                self.color = constants.HEX_COLOR_LIST * (self.groups_length / color_length) + \
+                             constants.HEX_COLOR_LIST[:self.groups_length % color_length]
         launch_count = len(launch_info_lists.time)
         self.total_launch_steps = numpy.zeros(
             (len(launch_info_lists.time), self.groups_length), dtype=int)
@@ -43,7 +55,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         self.failure_count = 0
         self.launch_array = numpy.zeros(self.groups_length, dtype=int)
         for i in numpy.arange(0, launch_count):
-            idx = groups_dict[launch_info_lists.launcher_man_country[i]]
+            idx = groups_dict[group_list[i]]
             if launch_info_lists.launch_result[i]:
                 self.successful_launch_time.append(launch_info_lists.time[i])
                 self.scs_array[idx] += 1
@@ -70,7 +82,7 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         i = 0
         j = 0
         while i < launch_count:
-            idx = groups_dict[launch_info_lists.launcher_man_country[i]]
+            idx = groups_dict[group_list[i]]
             if launch_info_lists.launch_result[i]:
                 k = i - j
                 if k > 0:
@@ -178,7 +190,7 @@ def plot_launch_times(launch_statistics,
         y_value = numpy.append(y_value, y_value[-1])
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
+                 color=launch_statistics.color[j],
                  label='{country}({number})'.format(
                      country=launch_statistics.groups[j],
                      number=str(y_value[-1])),
@@ -306,7 +318,7 @@ def plot_launch_energy(launch_statistics,
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 100000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
+                 color=launch_statistics.color[j],
                  label='{country}({number})'.format(
                      country=launch_statistics.groups[j],
                      number=label_value),
@@ -391,7 +403,7 @@ def plot_launch_r_energy(launch_statistics,
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 100000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
+                 color=launch_statistics.color[j],
                  label='{country}({number})'.format(
                      country=launch_statistics.groups[j],
                      number=label_value),
@@ -476,7 +488,7 @@ def plot_launch_delta_v(launch_statistics,
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
+                 color=launch_statistics.color[j],
                  label='{country}({number})'.format(
                      country=launch_statistics.groups[j],
                      number=label_value),
@@ -562,7 +574,7 @@ def plot_launch_mass(launch_statistics,
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
+                 color=launch_statistics.color[j],
                  label='{country}({number})'.format(
                      country=launch_statistics.groups[j],
                      number=label_value),

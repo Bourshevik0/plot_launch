@@ -25,6 +25,20 @@ HEX_COLOR_DICT = {
     '日本': '#808080'  # grey
 }
 
+HEX_COLOR_LIST = [
+    # reference https://cran.r-project.org/web/packages/khroma/vignettes/tol.html#muted
+    '#CC6677',  # rose
+    '#332288',  # indigo
+    '#DDCC77',  # sand
+    '#117733',  # green
+    '#88CCEE',  # cyan
+    '#882255',  # wine
+    '#44AA99',  # teal
+    '#999933',  # olive
+    '#AA4499',  # purple
+    '#808080'   # grey
+]
+
 STATUS_COLOR_DICT = {
     # reference https://cran.r-project.org/web/packages/khroma/vignettes/tol.html#vibrant
     '成功': '#0077BB',
