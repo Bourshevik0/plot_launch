@@ -30,20 +30,20 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         Get all the statistics needed for the plot.
         :param launch_info_lists: A LaunchInfoLists object.
         """
-        self.countries = numpy.unique(launch_info_lists.launcher_man_country)
-        countries_dict = {value: key for key, value in enumerate(self.countries)}
-        self.countries_length = len(self.countries)
+        self.groups = numpy.unique(launch_info_lists.launcher_man_country)
+        groups_dict = {value: key for key, value in enumerate(self.groups)}
+        self.groups_length = len(self.groups)
         launch_count = len(launch_info_lists.time)
         self.total_launch_steps = numpy.zeros(
-            (len(launch_info_lists.time), self.countries_length), dtype=int)
+            (len(launch_info_lists.time), self.groups_length), dtype=int)
         self.successful_launch_time = []
-        self.scs_array = numpy.zeros(self.countries_length, dtype=int)
+        self.scs_array = numpy.zeros(self.groups_length, dtype=int)
         self.scs_count = 0
-        self.failure_array = numpy.zeros(self.countries_length, dtype=int)
+        self.failure_array = numpy.zeros(self.groups_length, dtype=int)
         self.failure_count = 0
-        self.launch_array = numpy.zeros(self.countries_length, dtype=int)
+        self.launch_array = numpy.zeros(self.groups_length, dtype=int)
         for i in numpy.arange(0, launch_count):
-            idx = countries_dict[launch_info_lists.launcher_man_country[i]]
+            idx = groups_dict[launch_info_lists.launcher_man_country[i]]
             if launch_info_lists.launch_result[i]:
                 self.successful_launch_time.append(launch_info_lists.time[i])
                 self.scs_array[idx] += 1
@@ -59,18 +59,18 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
                 self.total_launch_steps[i][idx] = 1
 
         self.total_launch_energy_steps = numpy.zeros(
-            (self.scs_count, self.countries_length), dtype=int)
+            (self.scs_count, self.groups_length), dtype=int)
         self.total_launch_r_energy_steps = numpy.zeros(
-            (self.scs_count, self.countries_length), dtype=int)
+            (self.scs_count, self.groups_length), dtype=int)
         self.total_launch_delta_v_steps = numpy.zeros(
-            (self.scs_count, self.countries_length), dtype=int)
+            (self.scs_count, self.groups_length), dtype=int)
         self.total_launch_mass_steps = numpy.zeros(
-            (self.scs_count, self.countries_length), dtype=int)
+            (self.scs_count, self.groups_length), dtype=int)
 
         i = 0
         j = 0
         while i < launch_count:
-            idx = countries_dict[launch_info_lists.launcher_man_country[i]]
+            idx = groups_dict[launch_info_lists.launcher_man_country[i]]
             if launch_info_lists.launch_result[i]:
                 k = i - j
                 if k > 0:
@@ -154,9 +154,9 @@ def draw_cc_license(
     plt.imshow(cc_img)
 
 
-def plot_launch_times_by_country(launch_statistics,
-                                 launch_info_lists,
-                                 config_dict):
+def plot_launch_times(launch_statistics,
+                      launch_info_lists,
+                      config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param launch_info_lists: A LaunchInfoLists object.
@@ -172,15 +172,15 @@ def plot_launch_times_by_country(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.countries_length):
+    for j in numpy.arange(0, launch_statistics.groups_length):
         y_value = launch_statistics.total_launch_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
                  label='{country}({number})'.format(
-                     country=launch_statistics.countries[j],
+                     country=launch_statistics.groups[j],
                      number=str(y_value[-1])),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
@@ -282,8 +282,8 @@ def mass_update_scale_value(temp, position):
     return '{result}'.format(result=result)
 
 
-def plot_launch_energy_by_country(launch_statistics,
-                                  config_dict):
+def plot_launch_energy(launch_statistics,
+                       config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param config_dict: A dictionary to control the plotting procedure.
@@ -299,16 +299,16 @@ def plot_launch_energy_by_country(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.countries_length):
+    for j in numpy.arange(0, launch_statistics.groups_length):
         y_value = launch_statistics.total_launch_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 100000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
                  label='{country}({number})'.format(
-                     country=launch_statistics.countries[j],
+                     country=launch_statistics.groups[j],
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
@@ -367,8 +367,8 @@ def plot_launch_energy_by_country(launch_statistics,
     gc.collect()
 
 
-def plot_launch_r_energy_by_country(launch_statistics,
-                                    config_dict):
+def plot_launch_r_energy(launch_statistics,
+                         config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param config_dict: A dictionary to control the plotting procedure.
@@ -384,16 +384,16 @@ def plot_launch_r_energy_by_country(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.countries_length):
+    for j in numpy.arange(0, launch_statistics.groups_length):
         y_value = launch_statistics.total_launch_r_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 100000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
                  label='{country}({number})'.format(
-                     country=launch_statistics.countries[j],
+                     country=launch_statistics.groups[j],
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
@@ -452,8 +452,8 @@ def plot_launch_r_energy_by_country(launch_statistics,
     gc.collect()
 
 
-def plot_launch_delta_v_by_country(launch_statistics,
-                                   config_dict):
+def plot_launch_delta_v(launch_statistics,
+                        config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param config_dict: A dictionary to control the plotting procedure.
@@ -469,16 +469,16 @@ def plot_launch_delta_v_by_country(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.countries_length):
+    for j in numpy.arange(0, launch_statistics.groups_length):
         y_value = launch_statistics.total_launch_delta_v_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
                  label='{country}({number})'.format(
-                     country=launch_statistics.countries[j],
+                     country=launch_statistics.groups[j],
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
@@ -537,8 +537,8 @@ def plot_launch_delta_v_by_country(launch_statistics,
     gc.collect()
 
 
-def plot_launch_mass_by_country(launch_statistics,
-                                config_dict):
+def plot_launch_mass(launch_statistics,
+                     config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param config_dict: A dictionary to control the plotting procedure.
@@ -555,16 +555,16 @@ def plot_launch_mass_by_country(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.countries_length):
+    for j in numpy.arange(0, launch_statistics.groups_length):
         y_value = launch_statistics.total_launch_mass_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
         label_value = '{value:.3g}'.format(value=round(y_value[-1] / 1000, 2))
         plt.plot(x_value, y_value,
                  drawstyle='steps-post',
-                 color=constants.HEX_COLOR_DICT[launch_statistics.countries[j]],
+                 color=constants.HEX_COLOR_DICT[launch_statistics.groups[j]],
                  label='{country}({number})'.format(
-                     country=launch_statistics.countries[j],
+                     country=launch_statistics.groups[j],
                      number=label_value),
                  linewidth=3)
     plt.legend(prop=config_dict['fprop'], loc=2)
@@ -659,8 +659,8 @@ def draw_labels_on_bars(axes,
             fontproperties=config_dict['fprop'])
 
 
-def plot_launch_bar_by_country(launch_statistics,
-                               config_dict):
+def plot_launch_bar(launch_statistics,
+                    config_dict):
     """
     :param launch_statistics: A LaunchStatistics object.
     :param config_dict: A dictionary to control the plotting procedure.
@@ -668,20 +668,20 @@ def plot_launch_bar_by_country(launch_statistics,
     """
     indices = numpy.argsort(launch_statistics.launch_array)
     y_axis_labels = []
-    for country in launch_statistics.countries[indices]:
+    for country in launch_statistics.groups[indices]:
         y_axis_labels.append(country)
     fig, axes = plt.subplots(1,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
-    axes.yaxis.set_ticks(numpy.arange(0, launch_statistics.countries_length), rotation=0)
+    axes.yaxis.set_ticks(numpy.arange(0, launch_statistics.groups_length), rotation=0)
     axes.yaxis.set_ticklabels(y_axis_labels, fontproperties=config_dict['fprop'],
                               rotation=0, fontsize=20)
     for label in axes.get_xticklabels():
         label.set_fontproperties(config_dict['fprop'])
 
-    plt.barh(launch_statistics.countries, launch_statistics.scs_array[indices],
+    plt.barh(launch_statistics.groups, launch_statistics.scs_array[indices],
              color=constants.STATUS_COLOR_DICT['成功'], label='成功')
-    plt.barh(launch_statistics.countries, launch_statistics.failure_array[indices],
+    plt.barh(launch_statistics.groups, launch_statistics.failure_array[indices],
              left=launch_statistics.scs_array[indices],
              color=constants.STATUS_COLOR_DICT['失败'], label='失败')
 

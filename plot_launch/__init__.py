@@ -42,26 +42,26 @@ def main():
         launch_statistics = launch_plotter.LaunchStatistics(launch_info_lists)
 
         if 'step_filename' in config_dict:
-            launch_plotter.plot_launch_times_by_country(launch_statistics=launch_statistics,
-                                                        launch_info_lists=launch_info_lists,
-                                                        config_dict=config_dict)
+            launch_plotter.plot_launch_times(launch_statistics=launch_statistics,
+                                             launch_info_lists=launch_info_lists,
+                                             config_dict=config_dict)
         if 'energy_step_filename' in config_dict:
-            launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
-                                                         config_dict=config_dict)
+            launch_plotter.plot_launch_energy(launch_statistics=launch_statistics,
+                                              config_dict=config_dict)
         if 'r_energy_step_filename' in config_dict:
-            launch_plotter.plot_launch_r_energy_by_country(launch_statistics=launch_statistics,
-                                                           config_dict=config_dict)
+            launch_plotter.plot_launch_r_energy(launch_statistics=launch_statistics,
+                                                config_dict=config_dict)
         if 'delta_v_step_filename' in config_dict:
-            launch_plotter.plot_launch_delta_v_by_country(launch_statistics=launch_statistics,
-                                                          config_dict=config_dict)
+            launch_plotter.plot_launch_delta_v(launch_statistics=launch_statistics,
+                                               config_dict=config_dict)
 
         if 'mass_step_filename' in config_dict:
-            launch_plotter.plot_launch_mass_by_country(launch_statistics=launch_statistics,
-                                                       config_dict=config_dict)
+            launch_plotter.plot_launch_mass(launch_statistics=launch_statistics,
+                                            config_dict=config_dict)
 
         if 'bar_filename' in config_dict:
-            launch_plotter.plot_launch_bar_by_country(launch_statistics=launch_statistics,
-                                                      config_dict=config_dict)
+            launch_plotter.plot_launch_bar(launch_statistics=launch_statistics,
+                                           config_dict=config_dict)
 
         if 'latest_month_bar' in config_dict:
             new_lists = launch_info.LaunchInfoLists()
@@ -73,8 +73,8 @@ def main():
                 new_statistics = launch_plotter.LaunchStatistics(new_lists)
                 config_dict['bar_filename'] = config_dict['latest_month_bar']
                 config_dict['bar_title'] = config_dict['month_title']
-                launch_plotter.plot_launch_bar_by_country(launch_statistics=new_statistics,
-                                                          config_dict=config_dict)
+                launch_plotter.plot_launch_bar(launch_statistics=new_statistics,
+                                               config_dict=config_dict)
     else:
         launch_count = len(launch_info_lists.time) + 1
         i = 0
@@ -93,18 +93,18 @@ def main():
             if 'delta_v_step_filename' in config_dict:
                 config_dict['delta_v_step_filename'] = \
                     f'{dv_filename_list[0]}{j:03d}{dv_filename_list[1]}'
-                launch_plotter.plot_launch_delta_v_by_country(launch_statistics=launch_statistics,
-                                                              config_dict=config_dict)
+                launch_plotter.plot_launch_delta_v(launch_statistics=launch_statistics,
+                                                   config_dict=config_dict)
             if 'mass_step_filename' in config_dict:
                 config_dict['mass_step_filename'] = \
                     f'{m_filename_list[0]}{j:03d}{m_filename_list[1]}'
-                launch_plotter.plot_launch_mass_by_country(launch_statistics=launch_statistics,
-                                                           config_dict=config_dict)
+                launch_plotter.plot_launch_mass(launch_statistics=launch_statistics,
+                                                config_dict=config_dict)
             if 'energy_step_filename' in config_dict:
                 config_dict['energy_step_filename'] = \
                     f'{e_filename_list[0]}{j:03d}{e_filename_list[1]}'
-                launch_plotter.plot_launch_energy_by_country(launch_statistics=launch_statistics,
-                                                             config_dict=config_dict)
+                launch_plotter.plot_launch_energy(launch_statistics=launch_statistics,
+                                                  config_dict=config_dict)
             del launch_statistics
             del new_lists
             new_lists = launch_info.LaunchInfoLists()
