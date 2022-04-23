@@ -70,6 +70,9 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
             else:
                 self.total_launch_steps[i][idx] = 1
 
+        self.indices = numpy.argsort(self.launch_array)
+        self.r_indices = numpy.flip(self.indices)
+
         self.total_launch_energy_steps = numpy.zeros(
             (self.scs_count, self.groups_length), dtype=int)
         self.total_launch_r_energy_steps = numpy.zeros(
@@ -184,7 +187,7 @@ def plot_launch_times(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.groups_length):
+    for j in launch_statistics.r_indices:
         y_value = launch_statistics.total_launch_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -311,7 +314,7 @@ def plot_launch_energy(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.groups_length):
+    for j in launch_statistics.r_indices:
         y_value = launch_statistics.total_launch_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -396,7 +399,7 @@ def plot_launch_r_energy(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.groups_length):
+    for j in launch_statistics.r_indices:
         y_value = launch_statistics.total_launch_r_energy_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -481,7 +484,7 @@ def plot_launch_delta_v(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.groups_length):
+    for j in launch_statistics.r_indices:
         y_value = launch_statistics.total_launch_delta_v_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -567,7 +570,7 @@ def plot_launch_mass(launch_statistics,
                              figsize=config_dict['fig_size'],
                              dpi=config_dict['dpi'])
 
-    for j in numpy.arange(0, launch_statistics.groups_length):
+    for j in launch_statistics.r_indices:
         y_value = launch_statistics.total_launch_mass_steps[:, j]
         y_value = numpy.append(0, y_value)
         y_value = numpy.append(y_value, y_value[-1])
@@ -678,7 +681,7 @@ def plot_launch_bar(launch_statistics,
     :param config_dict: A dictionary to control the plotting procedure.
     :return None:
     """
-    indices = numpy.argsort(launch_statistics.launch_array)
+    indices = launch_statistics.indices
     y_axis_labels = []
     for country in launch_statistics.groups[indices]:
         y_axis_labels.append(country)

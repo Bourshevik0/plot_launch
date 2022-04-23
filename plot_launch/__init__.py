@@ -74,7 +74,7 @@ def main():
                 launch_info_lists.slice_info(new_lists, i, j)
                 new_statistics = launch_plotter.LaunchStatistics(
                     launch_info_lists=new_lists,
-                    group_list=launch_info_lists.launcher_man_country)
+                    group_list=new_lists.launcher_man_country)
                 config_dict['bar_filename'] = config_dict['latest_month_bar']
                 config_dict['bar_title'] = config_dict['month_title']
                 launch_plotter.plot_launch_bar(launch_statistics=new_statistics,
@@ -91,7 +91,7 @@ def main():
             launch_info_lists.slice_info(new_lists, i, j)
             launch_statistics = launch_plotter.LaunchStatistics(
                 launch_info_lists=new_lists,
-                group_list=launch_info_lists.launcher_man_country)
+                group_list=new_lists.launcher_man_country)
             if j < launch_count - 1:
                 config_dict['time_filter'][1] = launch_info_lists.time[j]
             else:
