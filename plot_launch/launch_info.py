@@ -468,19 +468,13 @@ def prcs_config_dict(config_dict):
     """
     matplotlib.rcParams.update({'font.size': constants.DEFAULT_FONTSIZE})
 
-    if config_dict and 'group_by' in config_dict:
-        config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
-                                                           config_dict['time_filter_format']),
-                                      from_str_to_datetime(config_dict['time_filter'][1],
-                                                           config_dict['time_filter_format'])]
-    else:
+    if not config_dict:
         config_dict = {
             'time_filter': [
                 datetime.datetime(year=constants.CURRENT_TIME.year,
                                   month=1,
                                   day=1),
                 constants.CURRENT_TIME],
-            'group_by': '火箭制造方',
             'filename_filter': str(constants.CURRENT_TIME.year),
             'step_title': '{year}年世界航天发射次数统计(阶跃图)'.format(
                 year=constants.CURRENT_TIME.year),
@@ -524,6 +518,17 @@ def prcs_config_dict(config_dict):
                 year=constants.CURRENT_TIME.year,
                 month=constants.CURRENT_TIME.month)
         }
+    else:
+        config_dict['time_filter'] = [from_str_to_datetime(config_dict['time_filter'][0],
+                                                           config_dict['time_filter_format']),
+                                      from_str_to_datetime(config_dict['time_filter'][1],
+                                                           config_dict['time_filter_format'])]
+    if 'group_by' not in config_dict:
+        if 'to_subs' not in config_dict:
+            config_dict['group_by'] = '火箭制造方'
+        else:
+            config_dict['group_by'] = ''
+
     if config_dict['time_filter'][1] > constants.CURRENT_TIME:
         config_dict['time_filter'][1] = constants.CURRENT_TIME
 
