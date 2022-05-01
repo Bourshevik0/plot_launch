@@ -181,7 +181,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                     not_last = False
                 j = the_rest[:i].find('：')
                 if '[' in the_rest[j + 1:i]:
-                    text = "".join(compiler.split(the_rest[j + 1:i]))
+                    text = ''.join(compiler.split(the_rest[j + 1:i]))
                 else:
                     text = the_rest[j + 1:i]
                 if j > 0:
@@ -202,6 +202,22 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
             launch_info_lists.time.append(time_obj)
             launch_info_lists.append_dict(data_dict)
 
+            result = config_dict.get('split_by')
+            if result:
+                if 'launch_provider' in result and 'payload_name' in result:
+                    if launch_info_lists.launch_provider[-1] == result['launch_provider']:
+                        if result['payload_name'] in launch_info_lists.payload_info[-1]:
+                            launch_info_lists.launch_provider[-1] += f'({result["payload_name"]})'
+                        else:
+                            launch_info_lists.launch_provider[-1] += f'(非{result["payload_name"]})'
+                elif 'launcher_man_country' in result and 'launch_provider' in result:
+                    if launch_info_lists.launcher_man_country[-1] == result['launcher_man_country']:
+                        if result['launch_provider'] in launch_info_lists.launch_provider[-1]:
+                            launch_info_lists.launcher_man_country[-1] \
+                                += f'({result["launch_provider"]})'
+                        else:
+                            launch_info_lists.launcher_man_country[-1] \
+                                += f'(非{result["launch_provider"]})'
             result = config_dict.get('to_subs')
             if result:
                 launch_info_to_subs(key_list=key_list, value_list=value_list,

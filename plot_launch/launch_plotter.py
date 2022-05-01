@@ -7,6 +7,7 @@ Defines codes needed to plot using matplotlib and numpy.
 # Import built-in modules
 import datetime
 import gc
+import re
 
 # Import third-party modules
 import matplotlib
@@ -38,10 +39,31 @@ class LaunchStatistics:  # pylint: disable=too-few-public-methods
         self.group_text = group_text
         groups_dict = {value: key for key, value in enumerate(self.groups)}
         self.groups_length = len(self.groups)
-        if self.groups[0] in constants.HEX_COLOR_DICT:
+
+        group_set = set(self.groups)
+        constant_set = set(constants.HEX_COLOR_DICT.keys())
+        group_complement = group_set - constant_set
+        if not group_complement:
             self.color = []
             for group_name in self.groups:
-                self.color.append(constants.HEX_COLOR_DICT[group_name])
+                self.color.append(constants.HEX_COLOR_DICT.get(group_name))
+        elif len(group_complement) < len(self.groups):
+            self.color = []
+            new_color_dict = constants.HEX_COLOR_DICT.copy()
+            i = 7
+            color_length = len(constants.HEX_COLOR_LIST)
+            compiler = re.compile(r'\(.*?\)')
+            last_item = ''
+            for group_item in group_complement:
+                origin_item = ''.join(compiler.split(group_item))
+                if origin_item in constants.HEX_COLOR_DICT and origin_item != last_item:
+                    new_color_dict[group_item] = constants.HEX_COLOR_DICT[origin_item]
+                else:
+                    new_color_dict[group_item] = constants.HEX_COLOR_LIST[i]
+                    i = (i + 1) % color_length
+                last_item = origin_item
+            for group_name in self.groups:
+                self.color.append(new_color_dict.get(group_name))
         else:
             color_length = len(constants.HEX_COLOR_LIST)
             if self.groups_length < color_length:
