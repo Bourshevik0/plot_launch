@@ -99,7 +99,7 @@ LICENSE_IMG_PATH = os.path.join(HERE, LICENSE_IMG_NAME)
 DEFAULT_STYLES_NAME = 'font/default_styles.ass'
 DEFAULT_STYLES_PATH = os.path.join(HERE, DEFAULT_STYLES_NAME)
 
-ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '实际轨道', '预期轨道')
+ORBIT_KEY_CANDIDATE = ('轨道', '轨道(末级)', '初始轨道', '实际轨道', '预期轨道', '运营轨道')
 DATA_KEY = ['编号',
             '火箭制造方',
             '时间',
