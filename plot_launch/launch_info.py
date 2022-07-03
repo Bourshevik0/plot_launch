@@ -207,17 +207,35 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 if 'launch_provider' in result and 'payload_name' in result:
                     if launch_info_lists.launch_provider[-1] == result['launch_provider']:
                         if result['payload_name'] in launch_info_lists.payload_info[-1]:
-                            launch_info_lists.launch_provider[-1] += f'({result["payload_name"]})'
+                            if 'custom_name' not in result:
+                                launch_info_lists.launch_provider[-1] \
+                                    += f'({result["payload_name"]})'
+                            else:
+                                launch_info_lists.launch_provider[-1] \
+                                    = f'{result["custom_name"][0]}'
                         else:
-                            launch_info_lists.launch_provider[-1] += f'(非{result["payload_name"]})'
+                            if 'custom_name' not in result:
+                                launch_info_lists.launch_provider[-1] \
+                                    += f'(非{result["payload_name"]})'
+                            else:
+                                launch_info_lists.launch_provider[-1] \
+                                    = f'{result["custom_name"][1]}'
                 elif 'launcher_man_country' in result and 'launch_provider' in result:
                     if launch_info_lists.launcher_man_country[-1] == result['launcher_man_country']:
                         if result['launch_provider'] in launch_info_lists.launch_provider[-1]:
-                            launch_info_lists.launcher_man_country[-1] \
-                                += f'({result["launch_provider"]})'
+                            if 'custom_name' not in result:
+                                launch_info_lists.launcher_man_country[-1] \
+                                    += f'({result["launch_provider"]})'
+                            else:
+                                launch_info_lists.launcher_man_country[-1] \
+                                    = f'{result["custom_name"][0]}'
                         else:
-                            launch_info_lists.launcher_man_country[-1] \
-                                += f'(非{result["launch_provider"]})'
+                            if 'custom_name' not in result:
+                                launch_info_lists.launcher_man_country[-1] \
+                                    += f'(非{result["launch_provider"]})'
+                            else:
+                                launch_info_lists.launcher_man_country[-1] \
+                                    = f'{result["custom_name"][1]}'
             result = config_dict.get('to_subs')
             if result:
                 launch_info_to_subs(key_list=key_list, value_list=value_list,
