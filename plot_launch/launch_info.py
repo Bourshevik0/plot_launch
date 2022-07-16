@@ -331,7 +331,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 print('轨道能量：{content:.3g}GJ'.format(
                     content=self.orbital_energy[-1] / 100))
                 print('轨道比能量：{content:.3g}MJ/kg'.format(
-                    content=self.s_orbital_energy[-1] / 100))
+                    content=self.s_orbital_energy[-1] / 1000000))
                 print('轨道相对比能量：{content:.3g}MJ/kg'.format(
                     content=self.r_orbital_energy[-1] / 100))
                 print('轨道理想dv：{content:.3g}km/s\n'.format(
