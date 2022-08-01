@@ -208,7 +208,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                     i = len(result['attr']) - 1
                     while i > -1:
                         launch_info_list = getattr(launch_info_lists, result['attr'][i])
-                        if result['value'][i] in launch_info_list[-1]:
+                        if launch_info_list[-1] and result['value'][i] in launch_info_list[-1]:
                             getattr(launch_info_lists, result['attr'][0])[-1] = result['label'][i]
                             break
                         i = i - 1
@@ -231,7 +231,14 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
         self.launcher_man_country.append(data_dict.get('火箭制造方'))
 
         self.location.append(data_dict.get('位置'))
-        self.mission_name.append(data_dict.get('任务名'))
+
+        result = None
+        for key in constants.MISSION_NAME_CANDIDATE:
+            result = data_dict.get(key)
+            if result:
+                break
+        self.mission_name.append(result)
+
         self.flight_num.append(data_dict.get('飞行编号'))
 
         result = data_dict.get('发射提供方')
@@ -272,6 +279,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
 
         self.launcher.append(data_dict.get('载具'))
 
+        result = None
         for key in constants.ORBIT_KEY_CANDIDATE:
             result = data_dict.get(key)
             if result:
