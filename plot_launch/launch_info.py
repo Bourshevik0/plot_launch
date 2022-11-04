@@ -312,6 +312,7 @@ class LaunchInfoLists:  # pylint: disable=too-few-public-methods
                 print('火箭：{rocket}'.format(rocket=self.launcher[-1]))
                 print('发射提供方：{lp}'.format(lp=self.launch_provider[-1]))
                 print('载荷信息：{info}'.format(info=self.payload_info[-1]))
+                print('载荷质量：{mass}'.format(mass=self.payload_mass[-1]))
                 print('轨道能量：{content:.3g}GJ'.format(
                     content=self.orbital_energy[-1] / 100))
                 print('轨道比能量：{content:.3g}MJ/kg'.format(
