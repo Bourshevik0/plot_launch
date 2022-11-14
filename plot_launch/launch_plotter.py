@@ -698,9 +698,9 @@ def font_resize(axes,
     rect_xy = axes.transData.transform(rect_wh)
     rect_pix = (rect_xy[0] - origin_xy[0], rect_xy[1] - origin_xy[1])
     if text_length > 1:
-        rect_font_w = int(rect_pix[0] / (text_length * 1.8 - 0.2))
-        # rect_pix[0] = ((text_length - 1) * 0.4 + text_length * 1.4) * rect_font_w
-        # rect_pix[0] = (text_length * 1.8 - 0.4) * rect_font_w
+        rect_font_w = int(rect_pix[0] / (text_length * 2 - 0.2))
+        # rect_pix[0] = ((text_length - 1) * 0.2 + text_length * 1.8) * rect_font_w
+        # rect_pix[0] = (text_length * 2 - 0.2) * rect_font_w
     else:
         rect_font_w = int(rect_pix[0])
     if font_size > rect_font_w:
@@ -731,9 +731,11 @@ def draw_labels_on_bars(axes,
                                 font_size=default_font_size,
                                 rect_wh=(x_value, rect.get_height()))
         if text_length > 1:
-            x_offset = font_size * (0.1 - text_length * 0.9)
-        else:
+            x_offset = font_size * (0.1 - text_length)
+        elif font_size < default_font_size:
             x_offset = font_size * (-0.9)
+        else:
+            x_offset = - font_size
         y_value = rect.get_y() + rect.get_height() * 0.5
         label_value = x_value
         if y_value not in y_x_dict:
