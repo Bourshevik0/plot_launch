@@ -92,7 +92,7 @@ LOCATION_DICT = {
 CURRENT_TIME = datetime.datetime.utcnow()
 
 HERE = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-FONT_NAME = 'font/sarasa-gothic-sc-semibold.ttf'
+FONT_NAME = 'font/sarasa-mono-sc-semibold.ttf'
 FONT_PATH = os.path.join(HERE, FONT_NAME)
 DEFAULT_DATA_DIR = 'launchinfo'
 DEFAULT_DATA_FILTER = str(CURRENT_TIME.year)

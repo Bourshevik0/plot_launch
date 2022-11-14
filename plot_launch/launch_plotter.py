@@ -679,6 +679,37 @@ def plot_launch_mass(launch_statistics,
     gc.collect()
 
 
+def font_resize(axes,
+                text_length,
+                font_size,
+                rect_wh):
+    """
+    Resize the font from font_size.
+    Ref: https://stackoverflow.com/questions/59794014/convert-pixel-coordinates-to-data-coordinates-in-matplotlib
+    https://matplotlib.org/stable/tutorials/advanced/transforms_tutorial.html
+    :param axes: A matplot axes object.
+    :param text_length: The length of the text.
+    :param font_size: The font_size(in pixel-coordinates) before being resized.
+    :param rect_wh: The rectangle limitation(in data-coordinates) to check
+    if it is necessary to resize.
+    :return font_size: The font_size after being resized.
+    """
+    origin_xy = axes.transData.transform((0.0, 0.0))
+    rect_xy = axes.transData.transform(rect_wh)
+    rect_pix = (rect_xy[0] - origin_xy[0], rect_xy[1] - origin_xy[1])
+    if text_length > 1:
+        rect_font_w = int(rect_pix[0] / (text_length * 1.8 - 0.2))
+        # rect_pix[0] = ((text_length - 1) * 0.4 + text_length * 1.4) * rect_font_w
+        # rect_pix[0] = (text_length * 1.8 - 0.4) * rect_font_w
+    else:
+        rect_font_w = int(rect_pix[0])
+    if font_size > rect_font_w:
+        font_size = int(rect_font_w)
+    if font_size > rect_pix[1]:
+        font_size = int(rect_pix[1])
+    return font_size
+
+
 def draw_labels_on_bars(axes,
                         config_dict):
     """
@@ -688,22 +719,23 @@ def draw_labels_on_bars(axes,
     :return axes: A matplot axes object.
     """
     y_x_dict = dict()
-    default_fontsize = 24
-    current_transform = axes.transData.inverted().transform((default_fontsize, default_fontsize))
-    current_transform[1] = abs(current_transform[1])
-    if current_transform[1] > 1.0:
-        default_fontsize = int(default_fontsize / current_transform[1])
+    default_font_size = 24
+
     for rect in axes.patches:
         x_value = rect.get_width()
-        label_value = x_value
         if x_value <= 0:
             continue
-        if x_value > 1:
-            x_offset = - len(str(label_value)) * default_fontsize - default_fontsize / 2
+        text_length = len(str(x_value))
+        font_size = font_resize(axes=axes,
+                                text_length=text_length,
+                                font_size=default_font_size,
+                                rect_wh=(x_value, rect.get_height()))
+        if text_length > 1:
+            x_offset = font_size * (0.1 - text_length * 0.9)
         else:
-            x_offset = - len(str(label_value)) * default_fontsize - default_fontsize * 0.4
-        y_value = rect.get_y() + rect.get_height() / 2
-
+            x_offset = font_size * (-0.9)
+        y_value = rect.get_y() + rect.get_height() * 0.5
+        label_value = x_value
         if y_value not in y_x_dict:
             y_x_dict[y_value] = x_value
         else:
@@ -712,11 +744,11 @@ def draw_labels_on_bars(axes,
         axes.annotate(
             label,
             (x_value, y_value),
-            xytext=(x_offset, - default_fontsize / 2),
+            xytext=(x_offset, font_size * (-0.5)),
             textcoords='offset pixels',
             color='#FFFFFF',
             rotation=0,
-            fontsize=default_fontsize,
+            fontsize=font_size,
             fontproperties=config_dict['fprop'])
 
 
