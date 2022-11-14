@@ -688,17 +688,20 @@ def draw_labels_on_bars(axes,
     :return axes: A matplot axes object.
     """
     y_x_dict = dict()
+    default_fontsize = 24
+    current_transform = axes.transData.inverted().transform((default_fontsize, default_fontsize))
+    current_transform[1] = abs(current_transform[1])
+    if current_transform[1] > 1.0:
+        default_fontsize = int(default_fontsize / current_transform[1])
     for rect in axes.patches:
         x_value = rect.get_width()
         label_value = x_value
-
         if x_value <= 0:
             continue
-
         if x_value > 1:
-            x_offset = - len(str(label_value)) * 20 - 10
+            x_offset = - len(str(label_value)) * default_fontsize - default_fontsize / 2
         else:
-            x_offset = - len(str(label_value)) * 20 - 4
+            x_offset = - len(str(label_value)) * default_fontsize - default_fontsize * 0.4
         y_value = rect.get_y() + rect.get_height() / 2
 
         if y_value not in y_x_dict:
@@ -709,11 +712,11 @@ def draw_labels_on_bars(axes,
         axes.annotate(
             label,
             (x_value, y_value),
-            xytext=(x_offset, - 10),
+            xytext=(x_offset, - default_fontsize / 2),
             textcoords='offset pixels',
             color='#FFFFFF',
             rotation=0,
-            fontsize=20,
+            fontsize=default_fontsize,
             fontproperties=config_dict['fprop'])
 
 
